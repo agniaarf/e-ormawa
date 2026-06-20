@@ -3,10 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/auth.php';
 
 if (is_logged_in()) {
-    $role = $_SESSION['role'] ?? '';
-    if ($role === 'Super Admin') redirect('/pages/super_admin/dashboard.php');
-    if ($role === 'Admin Organisasi') redirect('/pages/admin_organisasi/dashboard.php');
-    redirect('/pages/mahasiswa/dashboard.php');
+    redirect('/');
 }
 
 $error = '';
@@ -19,10 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $password = $_POST['password'] ?? '';
         $result = login_user($identifier, $password);
         if ($result['success']) {
-            $role = $result['user']['role_name'];
-            if ($role === 'Super Admin') redirect('/pages/super_admin/dashboard.php');
-            if ($role === 'Admin Organisasi') redirect('/pages/admin_organisasi/dashboard.php');
-            redirect('/pages/mahasiswa/dashboard.php');
+            redirect('/');
         } else {
             $error = $result['message'];
         }

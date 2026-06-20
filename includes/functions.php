@@ -76,6 +76,103 @@ function require_login(): void {
     }
 }
 
+// ---------- Org-scoped Roles & Permissions ----------
+function is_super_admin(): bool {
+    return ($_SESSION['role'] ?? '') === 'Super Admin';
+}
+
+/**
+ * Returns the current user's role within an organisation:
+ * 'leader', 'staff', 'member', or null if not a member.
+ */
+function get_org_role(int $user_id, int $org_id): ?string {
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT role FROM user_organisasi WHERE user_id = ? AND organisasi_id = ? AND status = 'aktif' LIMIT 1");
+    $stmt->execute([$user_id, $org_id]);
+    $role = $stmt->fetchColumn();
+    return $role !== false ? (string) $role : null;
+}
+
+function org_role_label(?string $role): string {
+    return match ($role) {
+        'leader' => 'Leader',
+        'staff'  => 'Staff',
+        'member' => 'Member',
+        default  => '-',
+    };
+}
+
+/**
+ * Central permission gate. Super Admin can do anything.
+ * Org-scoped actions require the appropriate role in $org_id.
+ */
+function can(string $action, ?int $org_id = null): bool {
+    if (!is_logged_in()) return false;
+    if (is_super_admin()) return true;
+
+    $uid = (int) $_SESSION['user_id'];
+    $role = ($org_id !== null) ? get_org_role($uid, $org_id) : null;
+
+    switch ($action) {
+        // Super Admin only (already returned true above for SA)
+        case 'organisasi.create':
+        case 'organisasi.delete':
+        case 'pengguna.manage':
+        case 'laporan.view':
+        case 'log.view':
+            return false;
+
+        // Leader of the org
+        case 'organisasi.update':
+        case 'member.assign_role':
+            return $role === 'leader';
+
+        // Leader or Staff of the org
+        case 'member.manage':
+        case 'kegiatan.manage':
+        case 'pengumuman.manage':
+        case 'permintaan.manage':
+            return in_array($role, ['leader', 'staff'], true);
+
+        // Any member of the org
+        case 'organisasi.read':
+        case 'member.read':
+        case 'kegiatan.read':
+            return $role !== null;
+
+        default:
+            return false;
+    }
+}
+
+function require_can(string $action, ?int $org_id = null): void {
+    if (!can($action, $org_id)) {
+        set_flash('error', 'Akses ditolak. Anda tidak memiliki izin untuk tindakan ini.');
+        redirect('/');
+    }
+}
+
+/**
+ * Organisations the user belongs to (active), including their role.
+ */
+function my_organisasi(int $user_id): array {
+    global $pdo;
+    $stmt = $pdo->prepare(
+        "SELECT o.*, uo.role AS my_role
+         FROM user_organisasi uo
+         JOIN organisasi o ON uo.organisasi_id = o.id
+         WHERE uo.user_id = ? AND uo.status = 'aktif' AND o.deleted_at IS NULL
+         ORDER BY o.nama"
+    );
+    $stmt->execute([$user_id]);
+    return $stmt->fetchAll();
+}
+
+// ---------- URL helper for clean routes ----------
+function url(string $path = ''): string {
+    return BASE_URL . '/' . ltrim($path, '/');
+}
+
 // ---------- Formatting ----------
 function format_tanggal(string $date): string {
     $bulan = [
