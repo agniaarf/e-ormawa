@@ -17,7 +17,7 @@ if (!isset($page_title)) $page_title = APP_NAME;
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/custom.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/custom.css?v=3">
     <script>
         tailwind.config = {
             theme: {

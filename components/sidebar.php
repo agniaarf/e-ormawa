@@ -64,7 +64,7 @@ if ($role === 'Super Admin') {
         if (in_array($r, ['leader','staff'], true)) {
             $items[] = ['label'=>'Permintaan Bergabung','url'=>url('organisasi/'.$oid.'/permintaan'),'icon'=>$icn['inbox'],'active'=>$current==='org_permintaan' && $current_org_id===$oid];
         }
-        $org_groups[] = ['name'=>$org['singkatan'] ?: $org['nama'], 'role'=>$r, 'items'=>$items];
+        $org_groups[] = ['id'=>$oid, 'name'=>$org['singkatan'] ?: $org['nama'], 'role'=>$r, 'items'=>$items];
     }
 }
 ?>
@@ -79,12 +79,22 @@ if ($role === 'Super Admin') {
         <nav class="flex-1 overflow-y-auto py-4 space-y-1">
             <?= makeMenu($menus) ?>
             <?php foreach ($org_groups as $group): ?>
+            <?php $oid = (int) $group['id']; ?>
+            <?php $isActiveGroup = false; foreach ($group['items'] as $item) { if (!empty($item['active'])) { $isActiveGroup = true; break; } } ?>
+            <?php $collapsedClass = $isActiveGroup ? '' : 'collapsed'; ?>
             <div class="pt-4 mt-2 border-t border-white/10">
-                <div class="px-6 pb-2 flex items-center gap-2">
-                    <span class="text-[11px] font-bold uppercase tracking-wider text-white/50 truncate"><?= e($group['name']) ?></span>
-                    <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-accent/20 text-accent"><?= e(org_role_label($group['role'])) ?></span>
+                <button type="button" onclick="toggleOrgSection(<?= $oid ?>)" class="w-full flex items-center justify-between px-6 py-2 text-white/80 hover:bg-white/10 transition-colors">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-white/50 truncate"><?= e($group['name']) ?></span>
+                        <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-accent/20 text-accent"><?= e(org_role_label($group['role'])) ?></span>
+                    </div>
+                    <svg id="org-chevron-<?= $oid ?>" class="org-section-chevron w-4 h-4 text-white/60 <?= $collapsedClass ?>" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+                </button>
+                <div id="org-section-<?= $oid ?>" class="org-section-content <?= $collapsedClass ?>">
+                    <div>
+                        <?= makeMenu($group['items']) ?>
+                    </div>
                 </div>
-                <?= makeMenu($group['items']) ?>
             </div>
             <?php endforeach; ?>
         </nav>

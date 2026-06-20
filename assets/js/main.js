@@ -32,6 +32,12 @@ function closeModal(id) {
     const el = document.getElementById(id);
     if (el) el.classList.add('hidden');
 }
+function toggleOrgSection(oid) {
+    const content = document.getElementById('org-section-' + oid);
+    const chevron = document.getElementById('org-chevron-' + oid);
+    if (content) content.classList.toggle('collapsed');
+    if (chevron) chevron.classList.toggle('collapsed');
+}
 
 // Global live search
 function initLiveSearch() {

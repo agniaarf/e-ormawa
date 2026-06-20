@@ -1,6 +1,6 @@
 <?php declare(strict_types=1); ?>
     </main>
-<script src="<?= BASE_URL ?>/assets/js/main.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/main.js?v=3"></script>
 <?php
 $flash = get_flash();
 if ($flash):
