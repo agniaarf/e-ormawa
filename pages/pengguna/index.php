@@ -72,11 +72,6 @@ if (($_GET['ajax'] ?? '') === 'table') {
     exit;
 }
 
-$edit = null;
-if (isset($_GET['edit'])) {
-    $edit = $pdo->prepare("SELECT * FROM users WHERE id=? LIMIT 1");
-    $edit->execute([(int)$_GET['edit']]); $edit = $edit->fetch();
-}
 ?>
 <?php require __DIR__ . '/../../components/head.php'; ?>
 <?php require __DIR__ . '/../../components/sidebar.php'; ?>
@@ -94,7 +89,7 @@ if (isset($_GET['edit'])) {
                     <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari nama/email/nim..." autocomplete="off" data-live-search data-target="#pengguna-table-body">
                 </form>
             </div>
-            <?php if (!$show_arsip): ?><button onclick="openModal('modalPengguna')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengguna">
+            <?php if (!$show_arsip): ?><button onclick="openPenggunaModal()" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengguna">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
             </button><?php endif; ?>
         </div>
@@ -116,40 +111,80 @@ if (isset($_GET['edit'])) {
     </div>
 </main>
 
-<?php
-$modal_id = 'modalPengguna';
-$modal_title = $edit ? 'Edit Pengguna' : 'Tambah Pengguna';
-ob_start();
-?>
-<form method="POST" action="<?= url('pengguna') ?>" class="grid grid-cols-1 md:grid-cols-3 gap-5">
-    <?= csrf_input() ?>
-    <?php if ($edit): ?><input type="hidden" name="id" value="<?= $edit['id'] ?>"><?php endif; ?>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Nama</label><input type="text" name="nama" required value="<?= e($edit['nama'] ?? '') ?>" class="form-input"></div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Email</label><input type="email" name="email" required value="<?= e($edit['email'] ?? '') ?>" class="form-input"></div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">NIM</label><input type="text" name="nim" required value="<?= e($edit['nim'] ?? '') ?>" class="form-input"></div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Role</label>
-        <select name="role_id" class="form-input">
-            <?php foreach ($roles as $r): ?><option value="<?= $r['id'] ?>" <?= ($edit['role_id'] ?? 3)==$r['id']?'selected':'' ?>><?= e($r['nama']) ?></option><?php endforeach; ?>
-        </select>
+<div id="modalPengguna" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalPengguna')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg" id="modalPenggunaTitle">Tambah Pengguna</h3>
+                <button type="button" onclick="closeModal('modalPengguna')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form method="POST" action="<?= url('pengguna') ?>" class="grid grid-cols-1 md:grid-cols-3 gap-5" id="formPengguna">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="id" id="penggunaId" value="">
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Nama</label><input type="text" name="nama" id="penggunaNama" required value="" class="form-input"></div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Email</label><input type="email" name="email" id="penggunaEmail" required value="" class="form-input"></div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">NIM</label><input type="text" name="nim" id="penggunaNim" required value="" class="form-input"></div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Role</label>
+                        <select name="role_id" id="penggunaRole" class="form-input"></select>
+                    </div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">No. HP</label><input type="text" name="no_hp" id="penggunaNoHp" value="" class="form-input"></div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Jurusan</label><input type="text" name="jurusan" id="penggunaJurusan" value="" class="form-input"></div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Angkatan</label><input type="text" name="angkatan" id="penggunaAngkatan" value="" class="form-input"></div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
+                        <select name="status" id="penggunaStatus" class="form-input">
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Nonaktif</option>
+                            <option value="menunggu">Menunggu</option>
+                        </select>
+                    </div>
+                    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Password <span id="penggunaPasswordLabel">(kosongkan jika tetap)</span></label><input type="password" name="password" id="penggunaPassword" class="form-input"></div>
+                    <div class="md:col-span-3 flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('modalPengguna')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
+                        <button type="submit" class="btn-primary" id="penggunaSubmitBtn">Tambah Pengguna</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">No. HP</label><input type="text" name="no_hp" value="<?= e($edit['no_hp'] ?? '') ?>" class="form-input"></div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Jurusan</label><input type="text" name="jurusan" value="<?= e($edit['jurusan'] ?? '') ?>" class="form-input"></div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Angkatan</label><input type="text" name="angkatan" value="<?= e($edit['angkatan'] ?? '') ?>" class="form-input"></div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
-        <select name="status" class="form-input">
-            <option value="aktif" <?= ($edit['status'] ?? '')==='aktif'?'selected':'' ?>>Aktif</option>
-            <option value="nonaktif" <?= ($edit['status'] ?? '')==='nonaktif'?'selected':'' ?>>Nonaktif</option>
-            <option value="menunggu" <?= ($edit['status'] ?? '')==='menunggu'?'selected':'' ?>>Menunggu</option>
-        </select>
-    </div>
-    <div><label class="block text-sm font-semibold text-on-surface mb-1.5">Password <?= $edit ? '(kosongkan jika tetap)' : '' ?></label><input type="password" name="password" <?= $edit ? '' : 'required' ?> class="form-input"></div>
-    <div class="md:col-span-3 flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modalPengguna')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
-        <button type="submit" class="btn-primary"><?= $edit ? 'Simpan Perubahan' : 'Tambah Pengguna' ?></button>
-    </div>
-</form>
-<?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
-<?php if ($edit): ?><script>document.addEventListener('DOMContentLoaded',()=>openModal('modalPengguna'));</script><?php endif; ?>
+</div>
+
+<script>
+const roles = <?= json_encode($roles) ?>;
+function buildRoleSelect(selected) {
+    const el = document.getElementById('penggunaRole');
+    el.innerHTML = '';
+    for (const r of roles) {
+        const opt = document.createElement('option');
+        opt.value = r.id;
+        opt.textContent = r.nama;
+        if (String(r.id) === String(selected)) opt.selected = true;
+        el.appendChild(opt);
+    }
+}
+function openPenggunaModal(row) {
+    const isEdit = !!row;
+    document.getElementById('modalPenggunaTitle').textContent = isEdit ? 'Edit Pengguna' : 'Tambah Pengguna';
+    document.getElementById('penggunaSubmitBtn').textContent = isEdit ? 'Simpan Perubahan' : 'Tambah Pengguna';
+    document.getElementById('penggunaPasswordLabel').textContent = isEdit ? '(kosongkan jika tetap)' : '';
+    document.getElementById('penggunaPassword').required = !isEdit;
+    document.getElementById('penggunaId').value = isEdit ? row.id : '';
+    document.getElementById('penggunaNama').value = isEdit ? row.nama : '';
+    document.getElementById('penggunaEmail').value = isEdit ? row.email : '';
+    document.getElementById('penggunaNim').value = isEdit ? row.nim : '';
+    document.getElementById('penggunaNoHp').value = isEdit ? row.no_hp : '';
+    document.getElementById('penggunaJurusan').value = isEdit ? row.jurusan : '';
+    document.getElementById('penggunaAngkatan').value = isEdit ? row.angkatan : '';
+    document.getElementById('penggunaStatus').value = isEdit ? row.status : 'aktif';
+    document.getElementById('penggunaPassword').value = '';
+    buildRoleSelect(isEdit ? row.role_id : 3);
+    openModal('modalPengguna');
+}
+</script>
+
 <?php require __DIR__ . '/../../components/footer.php'; ?>

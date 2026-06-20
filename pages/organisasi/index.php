@@ -103,23 +103,15 @@ if (isset($_GET['restore'])) {
 $search = trim($_GET['search'] ?? '');
 $show_arsip = is_super_admin() && isset($_GET['arsip']);
 
+$users = $pdo->query("SELECT id, nama, nim FROM users WHERE status='aktif' AND deleted_at IS NULL AND role_id=3 ORDER BY nama")->fetchAll();
+
 if (is_super_admin()) {
-    $sql = "SELECT o.*, (SELECT u.nama FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=o.id AND uo.role='leader' AND uo.status='aktif' LIMIT 1) AS leader_nama
+    $sql = "SELECT o.*, (SELECT u.id FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=o.id AND uo.role='leader' AND uo.status='aktif' LIMIT 1) AS leader_id, (SELECT u.nama FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=o.id AND uo.role='leader' AND uo.status='aktif' LIMIT 1) AS leader_nama
             FROM organisasi o WHERE o.deleted_at IS " . ($show_arsip ? 'NOT NULL' : 'NULL');
     $params = [];
     if ($search !== '') { $sql .= " AND (o.nama LIKE ? OR o.singkatan LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
     $sql .= " ORDER BY o.created_at DESC";
     $stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
-
-    $edit = null;
-    if (isset($_GET['edit'])) {
-        $edit = $pdo->prepare("SELECT * FROM organisasi WHERE id=? LIMIT 1");
-        $edit->execute([(int) $_GET['edit']]); $edit = $edit->fetch();
-        if ($edit) {
-            $le = $pdo->prepare("SELECT user_id FROM user_organisasi WHERE organisasi_id=? AND role='leader' AND status='aktif' LIMIT 1");
-            $le->execute([$edit['id']]); $edit['leader_id'] = $le->fetchColumn() ?: '';
-        }
-    }
 } else {
     // Mahasiswa browse
     $sql = "SELECT o.* FROM organisasi o WHERE o.status='aktif' AND o.deleted_at IS NULL";
@@ -161,7 +153,7 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
                     <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari organisasi..." autocomplete="off" data-live-search data-target="#org-table-body">
                 </form>
             </div>
-            <button onclick="openModal('modalOrganisasi')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah organisasi">
+            <button onclick="openOrganisasiModal()" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah organisasi">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
             </button>
         </div>
@@ -227,58 +219,91 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
     </div>
 </main>
 
-<?php if (is_super_admin()):
-$modal_id = 'modalOrganisasi';
-$modal_title = ($edit ?? null) ? 'Edit Organisasi' : 'Tambah Organisasi';
-ob_start();
-?>
-<form method="POST" action="<?= url('organisasi') ?>" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <?= csrf_input() ?>
-    <input type="hidden" name="intent" value="save_org">
-    <?php if ($edit ?? null): ?><input type="hidden" name="id" value="<?= $edit['id'] ?>"><?php endif; ?>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Nama Organisasi</label>
-        <input type="text" name="nama" required value="<?= e($edit['nama'] ?? '') ?>" class="form-input" placeholder="Nama lengkap organisasi">
+<?php if (is_super_admin()): ?>
+<div id="modalOrganisasi" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalOrganisasi')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg" id="modalOrganisasiTitle">Tambah Organisasi</h3>
+                <button type="button" onclick="closeModal('modalOrganisasi')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form method="POST" action="<?= url('organisasi') ?>" class="grid grid-cols-1 md:grid-cols-2 gap-5" id="formOrganisasi">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="intent" value="save_org">
+                    <input type="hidden" name="id" id="orgId" value="">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Nama Organisasi</label>
+                        <input type="text" name="nama" id="orgNama" required value="" class="form-input" placeholder="Nama lengkap organisasi">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Singkatan</label>
+                        <input type="text" name="singkatan" id="orgSingkatan" value="" class="form-input" placeholder="Contoh: BEM, HIMTI">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
+                        <select name="status" id="orgStatus" class="form-input">
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Leader (Ketua)</label>
+                        <select name="leader_id" id="orgLeader" class="form-input"></select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Deskripsi</label>
+                        <textarea name="deskripsi" id="orgDeskripsi" rows="2" class="form-input py-2" placeholder="Deskripsi singkat"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Visi</label>
+                        <textarea name="visi" id="orgVisi" rows="2" class="form-input py-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Misi</label>
+                        <textarea name="misi" id="orgMisi" rows="2" class="form-input py-2"></textarea>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('modalOrganisasi')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
+                        <button type="submit" class="btn-primary" id="orgSubmitBtn">Tambah Organisasi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Singkatan</label>
-        <input type="text" name="singkatan" value="<?= e($edit['singkatan'] ?? '') ?>" class="form-input" placeholder="Contoh: BEM, HIMTI">
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
-        <select name="status" class="form-input">
-            <option value="aktif" <?= ($edit['status'] ?? '')==='aktif'?'selected':'' ?>>Aktif</option>
-            <option value="nonaktif" <?= ($edit['status'] ?? '')==='nonaktif'?'selected':'' ?>>Nonaktif</option>
-        </select>
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Leader (Ketua)</label>
-        <select name="leader_id" class="form-input">
-            <option value="">-- Pilih Leader --</option>
-            <?php foreach ($pdo->query("SELECT id, nama, nim FROM users WHERE status='aktif' AND deleted_at IS NULL AND role_id=3 ORDER BY nama")->fetchAll() as $u): ?>
-            <option value="<?= $u['id'] ?>" <?= ($edit['leader_id'] ?? '')==$u['id']?'selected':'' ?>><?= e($u['nama']) ?> (<?= e($u['nim']) ?>)</option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Deskripsi</label>
-        <textarea name="deskripsi" rows="2" class="form-input py-2" placeholder="Deskripsi singkat"><?= e($edit['deskripsi'] ?? '') ?></textarea>
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Visi</label>
-        <textarea name="visi" rows="2" class="form-input py-2"><?= e($edit['visi'] ?? '') ?></textarea>
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Misi</label>
-        <textarea name="misi" rows="2" class="form-input py-2"><?= e($edit['misi'] ?? '') ?></textarea>
-    </div>
-    <div class="md:col-span-2 flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modalOrganisasi')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
-        <button type="submit" class="btn-primary"><?= ($edit ?? null) ? 'Simpan Perubahan' : 'Tambah Organisasi' ?></button>
-    </div>
-</form>
-<?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
-<?php if ($edit ?? null): ?><script>document.addEventListener('DOMContentLoaded',()=>openModal('modalOrganisasi'));</script><?php endif; ?>
+</div>
+
+<script>
+const users = <?= json_encode($users) ?>;
+function buildOrgLeader(selected) {
+    const el = document.getElementById('orgLeader');
+    el.innerHTML = '<option value="">-- Pilih Leader --</option>';
+    for (const u of users) {
+        const opt = document.createElement('option');
+        opt.value = u.id;
+        opt.textContent = `${u.nama} (${u.nim})`;
+        if (String(u.id) === String(selected)) opt.selected = true;
+        el.appendChild(opt);
+    }
+}
+function openOrganisasiModal(row) {
+    const isEdit = !!row;
+    document.getElementById('modalOrganisasiTitle').textContent = isEdit ? 'Edit Organisasi' : 'Tambah Organisasi';
+    document.getElementById('orgSubmitBtn').textContent = isEdit ? 'Simpan Perubahan' : 'Tambah Organisasi';
+    document.getElementById('orgId').value = isEdit ? row.id : '';
+    document.getElementById('orgNama').value = isEdit ? row.nama : '';
+    document.getElementById('orgSingkatan').value = isEdit ? row.singkatan : '';
+    document.getElementById('orgStatus').value = isEdit ? row.status : 'aktif';
+    document.getElementById('orgDeskripsi').value = isEdit ? row.deskripsi : '';
+    document.getElementById('orgVisi').value = isEdit ? row.visi : '';
+    document.getElementById('orgMisi').value = isEdit ? row.misi : '';
+    buildOrgLeader(isEdit ? row.leader_id : '');
+    openModal('modalOrganisasi');
+}
+</script>
 
 <?php else:
 // Mahasiswa join modal

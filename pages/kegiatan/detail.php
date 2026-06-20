@@ -59,7 +59,7 @@ $status_class = $keg['status']==='berlangsung'?'bg-green-100 text-green-700':($k
             </div>
             <?php if (can('kegiatan.manage', $org_id)): ?>
             <div class="pt-4 border-t border-outline-variant">
-                <a href="<?= url('organisasi/' . $org_id . '/kegiatan') ?>?edit=<?= $keg_id ?>" class="btn-primary !h-9 !px-4 !text-sm">Edit Kegiatan</a>
+                <a href="<?= url('organisasi/' . $org_id . '/kegiatan') ?>" class="btn-primary !h-9 !px-4 !text-sm">Kembali ke Kegiatan</a>
             </div>
             <?php endif; ?>
         </div>

@@ -94,14 +94,6 @@ if (($_GET['ajax'] ?? '') === 'table') {
     exit;
 }
 
-$edit = null;
-if ($can_create && isset($_GET['edit'])) {
-    $edit = $pdo->prepare("SELECT * FROM pengumuman WHERE id=? LIMIT 1");
-    $edit->execute([(int)$_GET['edit']]); $edit = $edit->fetch();
-    // verify edit rights
-    if ($edit && !is_super_admin() && !($edit['tipe']==='organisasi' && can('pengumuman.manage', (int)$edit['organisasi_id']))) { $edit = null; }
-}
-
 function canModifyPengumuman(array $p): bool {
     if (is_super_admin()) return true;
     return $p['tipe']==='organisasi' && can('pengumuman.manage', (int)$p['organisasi_id']);
@@ -122,7 +114,7 @@ function canModifyPengumuman(array $p): bool {
                     <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari pengumuman..." autocomplete="off" data-live-search data-target="#pengumuman-table-body">
                 </form>
             </div>
-            <?php if ($can_create): ?><button onclick="openModal('modalPengumuman')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengumuman">
+            <?php if ($can_create): ?><button onclick="openPengumumanModal()" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengumuman">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
             </button><?php endif; ?>
         </div>
@@ -144,46 +136,86 @@ function canModifyPengumuman(array $p): bool {
 </main>
 
 <?php if ($can_create):
-$modal_id = 'modalPengumuman'; $modal_title = $edit ? 'Edit Pengumuman' : 'Tambah Pengumuman'; ob_start();
 $allow_global = is_super_admin();
+$orgopts = $allow_global ? $pdo->query("SELECT id, nama FROM organisasi WHERE status='aktif' AND deleted_at IS NULL ORDER BY nama")->fetchAll() : [];
 ?>
-<form method="POST" action="<?= url('pengumuman') ?>" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <?= csrf_input() ?>
-    <?php if ($edit): ?><input type="hidden" name="id" value="<?= $edit['id'] ?>"><?php endif; ?>
-    <div class="md:col-span-2"><label class="block text-sm font-semibold text-on-surface mb-1.5">Judul</label><input type="text" name="judul" required value="<?= e($edit['judul'] ?? '') ?>" class="form-input"></div>
-    <div class="md:col-span-2"><label class="block text-sm font-semibold text-on-surface mb-1.5">Isi</label><textarea name="isi" rows="4" required class="form-input py-2"><?= e($edit['isi'] ?? '') ?></textarea></div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tipe</label>
-        <select name="tipe" id="peng-tipe" class="form-input" onchange="document.getElementById('peng-org').classList.toggle('hidden', this.value!=='organisasi')">
-            <?php if ($allow_global): ?><option value="global" <?= ($edit['tipe'] ?? 'global')==='global'?'selected':'' ?>>Global</option><?php endif; ?>
-            <option value="organisasi" <?= ($edit['tipe'] ?? ($allow_global?'global':'organisasi'))==='organisasi'?'selected':'' ?>>Organisasi</option>
-        </select>
+<div id="modalPengumuman" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalPengumuman')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg" id="modalPengumumanTitle">Tambah Pengumuman</h3>
+                <button type="button" onclick="closeModal('modalPengumuman')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form method="POST" action="<?= url('pengumuman') ?>" class="grid grid-cols-1 md:grid-cols-2 gap-5" id="formPengumuman">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="id" id="pengumumanId" value="">
+                    <div class="md:col-span-2"><label class="block text-sm font-semibold text-on-surface mb-1.5">Judul</label><input type="text" name="judul" id="pengumumanJudul" required value="" class="form-input"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-semibold text-on-surface mb-1.5">Isi</label><textarea name="isi" id="pengumumanIsi" rows="4" required class="form-input py-2"></textarea></div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tipe</label>
+                        <select name="tipe" id="pengumumanTipe" class="form-input" onchange="document.getElementById('pengumumanOrgWrap').classList.toggle('hidden', this.value!=='organisasi')">
+                            <?php if ($allow_global): ?><option value="global">Global</option><?php endif; ?>
+                            <option value="organisasi">Organisasi</option>
+                        </select>
+                    </div>
+                    <div id="pengumumanOrgWrap" class="<?= $allow_global ? 'hidden' : '' ?>">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Organisasi</label>
+                        <select name="organisasi_id" id="pengumumanOrg" class="form-input"></select>
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('modalPengumuman')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
+                        <button type="submit" class="btn-primary" id="pengumumanSubmitBtn">Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div id="peng-org" class="<?= ($edit['tipe'] ?? ($allow_global?'global':'organisasi'))==='organisasi' ? '' : 'hidden' ?>">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Organisasi</label>
-        <select name="organisasi_id" class="form-input">
-            <option value="">Pilih organisasi</option>
-            <?php
-            if (is_super_admin()) {
-                $orgopts = $pdo->query("SELECT id, nama FROM organisasi WHERE status='aktif' AND deleted_at IS NULL ORDER BY nama")->fetchAll();
-                foreach ($orgopts as $o): ?>
-                    <option value="<?= $o['id'] ?>" <?= ($edit['organisasi_id'] ?? '')==$o['id']?'selected':'' ?>><?= e($o['nama']) ?></option>
-                <?php endforeach;
-            } else {
-                foreach ($managed_orgs as $oid => $onama): ?>
-                    <option value="<?= $oid ?>" <?= ($edit['organisasi_id'] ?? '')==$oid?'selected':'' ?>><?= e($onama) ?></option>
-                <?php endforeach;
-            }
-            ?>
-        </select>
-    </div>
-    <div class="md:col-span-2 flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modalPengumuman')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
-        <button type="submit" class="btn-primary"><?= $edit ? 'Simpan' : 'Tambah' ?></button>
-    </div>
-</form>
-<?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
-<?php if ($edit): ?><script>document.addEventListener('DOMContentLoaded',()=>openModal('modalPengumuman'));</script><?php endif; ?>
+</div>
+
+<script>
+const allowGlobal = <?= json_encode($allow_global) ?>;
+const orgOptions = <?= json_encode($allow_global ? $orgopts : $managed_orgs) ?>;
+const isSuperAdmin = <?= json_encode($allow_global) ?>;
+function buildOrgOptions(selected) {
+    const el = document.getElementById('pengumumanOrg');
+    el.innerHTML = '<option value="">Pilih organisasi</option>';
+    if (isSuperAdmin) {
+        for (const o of orgOptions) {
+            const opt = document.createElement('option');
+            opt.value = o.id;
+            opt.textContent = o.nama;
+            if (String(o.id) === String(selected)) opt.selected = true;
+            el.appendChild(opt);
+        }
+    } else {
+        for (const [oid, onama] of Object.entries(orgOptions)) {
+            const opt = document.createElement('option');
+            opt.value = oid;
+            opt.textContent = onama;
+            if (String(oid) === String(selected)) opt.selected = true;
+            el.appendChild(opt);
+        }
+    }
+}
+function openPengumumanModal(row) {
+    const isEdit = !!row;
+    const defaultTipe = allowGlobal ? 'global' : 'organisasi';
+    document.getElementById('modalPengumumanTitle').textContent = isEdit ? 'Edit Pengumuman' : 'Tambah Pengumuman';
+    document.getElementById('pengumumanSubmitBtn').textContent = isEdit ? 'Simpan' : 'Tambah';
+    document.getElementById('pengumumanId').value = isEdit ? row.id : '';
+    document.getElementById('pengumumanJudul').value = isEdit ? row.judul : '';
+    document.getElementById('pengumumanIsi').value = isEdit ? row.isi : '';
+    const tipe = isEdit ? row.tipe : defaultTipe;
+    document.getElementById('pengumumanTipe').value = tipe;
+    document.getElementById('pengumumanOrgWrap').classList.toggle('hidden', tipe !== 'organisasi');
+    buildOrgOptions(isEdit ? row.organisasi_id : '');
+    openModal('modalPengumuman');
+}
+</script>
 <?php endif; ?>
 
 <?php require __DIR__ . '/../../components/footer.php'; ?>

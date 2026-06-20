@@ -64,12 +64,15 @@ if (($_GET['ajax'] ?? '') === 'table') {
     exit;
 }
 
-$edit = null;
-if ($can_manage && isset($_GET['edit'])) {
-    $edit = $pdo->prepare("SELECT * FROM kegiatan WHERE id=? AND organisasi_id=? LIMIT 1");
-    $edit->execute([(int)$_GET['edit'], $org_id]); $edit = $edit->fetch();
-}
+$tipe_options = ['rapat'=>'Rapat','pelatihan'=>'Pelatihan','proker'=>'Proker','lomba'=>'Lomba','sosial'=>'Sosial','lainnya'=>'Lainnya'];
+$status_options = ['rencana'=>'Rencana','berlangsung'=>'Berlangsung','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'];
 ?>
+<?php if ($can_manage): ?>
+<script>
+const tipeOptions = <?= json_encode($tipe_options) ?>;
+const statusOptions = <?= json_encode($status_options) ?>;
+</script>
+<?php endif; ?>
 <?php require __DIR__ . '/../../components/head.php'; ?>
 <?php require __DIR__ . '/../../components/sidebar.php'; ?>
 <?php require __DIR__ . '/../../components/navbar.php'; ?>
@@ -89,7 +92,7 @@ if ($can_manage && isset($_GET['edit'])) {
                     <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari kegiatan..." autocomplete="off" data-live-search data-target="#kegiatan-table-body">
                 </form>
             </div>
-            <?php if ($can_manage): ?><button onclick="openModal('modalKegiatan')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah kegiatan">
+            <?php if ($can_manage): ?><button onclick="openEditModal()" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah kegiatan">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
             </button><?php endif; ?>
         </div>
@@ -110,55 +113,92 @@ if ($can_manage && isset($_GET['edit'])) {
     </div>
 </main>
 
-<?php if ($can_manage):
-$modal_id = 'modalKegiatan'; $modal_title = $edit ? 'Edit Kegiatan' : 'Tambah Kegiatan'; ob_start();
-?>
-<form method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <?= csrf_input() ?>
-    <?php if ($edit): ?><input type="hidden" name="id" value="<?= $edit['id'] ?>"><?php endif; ?>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Nama Kegiatan</label>
-        <input type="text" name="nama" required value="<?= e($edit['nama'] ?? '') ?>" class="form-input">
+<?php if ($can_manage): ?>
+<div id="modalKegiatan" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalKegiatan')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg" id="modalKegiatanTitle">Tambah Kegiatan</h3>
+                <button type="button" onclick="closeModal('modalKegiatan')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-5" id="formKegiatan">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="id" id="kegiatanId" value="">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Nama Kegiatan</label>
+                        <input type="text" name="nama" id="kegiatanNama" required value="" class="form-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tipe</label>
+                        <select name="tipe" id="kegiatanTipe" class="form-input"></select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
+                        <select name="status" id="kegiatanStatus" class="form-input"></select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Deskripsi</label>
+                        <textarea name="deskripsi" id="kegiatanDeskripsi" rows="2" class="form-input py-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tanggal Mulai</label>
+                        <input type="datetime-local" name="tanggal_mulai" id="kegiatanMulai" required value="" class="form-input">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tanggal Selesai</label>
+                        <input type="datetime-local" name="tanggal_selesai" id="kegiatanSelesai" value="" class="form-input">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Lokasi</label>
+                        <input type="text" name="lokasi" id="kegiatanLokasi" value="" class="form-input">
+                    </div>
+                    <div class="md:col-span-2 flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('modalKegiatan')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
+                        <button type="submit" class="btn-primary" id="kegiatanSubmitBtn">Tambah</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tipe</label>
-        <select name="tipe" class="form-input">
-            <?php foreach (['rapat'=>'Rapat','pelatihan'=>'Pelatihan','proker'=>'Proker','lomba'=>'Lomba','sosial'=>'Sosial','lainnya'=>'Lainnya'] as $k=>$v): ?>
-            <option value="<?= $k ?>" <?= ($edit['tipe']??'')===$k?'selected':'' ?>><?= $v ?></option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
-        <select name="status" class="form-input">
-            <?php foreach (['rencana'=>'Rencana','berlangsung'=>'Berlangsung','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'] as $k=>$v): ?>
-            <option value="<?= $k ?>" <?= ($edit['status']??'')===$k?'selected':'' ?>><?= $v ?></option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Deskripsi</label>
-        <textarea name="deskripsi" rows="2" class="form-input py-2"><?= e($edit['deskripsi'] ?? '') ?></textarea>
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tanggal Mulai</label>
-        <input type="datetime-local" name="tanggal_mulai" required value="<?= e($edit['tanggal_mulai'] ? date('Y-m-d\TH:i', strtotime($edit['tanggal_mulai'])) : '') ?>" class="form-input">
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Tanggal Selesai</label>
-        <input type="datetime-local" name="tanggal_selesai" value="<?= e($edit['tanggal_selesai'] ? date('Y-m-d\TH:i', strtotime($edit['tanggal_selesai'])) : '') ?>" class="form-input">
-    </div>
-    <div class="md:col-span-2">
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Lokasi</label>
-        <input type="text" name="lokasi" value="<?= e($edit['lokasi'] ?? '') ?>" class="form-input">
-    </div>
-    <div class="md:col-span-2 flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modalKegiatan')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
-        <button type="submit" class="btn-primary"><?= $edit ? 'Simpan' : 'Tambah' ?></button>
-    </div>
-</form>
-<?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
-<?php if ($edit): ?><script>document.addEventListener('DOMContentLoaded',()=>openModal('modalKegiatan'));</script><?php endif; ?>
+</div>
+
+<script>
+function buildSelect(id, options, selected) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    for (const [k, v] of Object.entries(options)) {
+        const opt = document.createElement('option');
+        opt.value = k;
+        opt.textContent = v;
+        if (k === selected) opt.selected = true;
+        el.appendChild(opt);
+    }
+}
+function fmtDatetimeLocal(d) {
+    if (!d) return '';
+    const dt = new Date(d);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+function openEditModal(keg) {
+    const isEdit = keg && keg.id;
+    document.getElementById('modalKegiatanTitle').textContent = isEdit ? 'Edit Kegiatan' : 'Tambah Kegiatan';
+    document.getElementById('kegiatanSubmitBtn').textContent = isEdit ? 'Simpan' : 'Tambah';
+    document.getElementById('kegiatanId').value = isEdit ? keg.id : '';
+    document.getElementById('kegiatanNama').value = isEdit ? keg.nama : '';
+    document.getElementById('kegiatanDeskripsi').value = isEdit ? keg.deskripsi : '';
+    document.getElementById('kegiatanLokasi').value = isEdit ? keg.lokasi : '';
+    document.getElementById('kegiatanMulai').value = isEdit ? fmtDatetimeLocal(keg.tanggal_mulai) : '';
+    document.getElementById('kegiatanSelesai').value = isEdit ? fmtDatetimeLocal(keg.tanggal_selesai) : '';
+    buildSelect('kegiatanTipe', tipeOptions, isEdit ? keg.tipe : 'proker');
+    buildSelect('kegiatanStatus', statusOptions, isEdit ? keg.status : 'rencana');
+    openModal('modalKegiatan');
+}
+</script>
 <?php endif; ?>
 
 <div id="detailModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">

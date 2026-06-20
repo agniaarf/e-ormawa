@@ -65,12 +65,6 @@ if (($_GET['ajax'] ?? '') === 'table') {
     exit;
 }
 
-$edit = null;
-if ($can_manage && isset($_GET['edit'])) {
-    $edit = $pdo->prepare("SELECT uo.*, u.nama FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.id=? AND uo.organisasi_id=? LIMIT 1");
-    $edit->execute([(int)$_GET['edit'], $org_id]); $edit = $edit->fetch();
-}
-
 function memberRoleBadge(string $role): string {
     return match ($role) {
         'leader' => 'bg-primary/10 text-primary',
@@ -113,36 +107,57 @@ function memberRoleBadge(string $role): string {
     </div>
 </main>
 
-<?php if ($can_manage && $edit):
-$modal_id = 'modalMember'; $modal_title = 'Edit Member'; ob_start();
-?>
-<form method="POST" action="" class="space-y-4">
-    <?= csrf_input() ?>
-    <input type="hidden" name="intent" value="update_member">
-    <input type="hidden" name="id" value="<?= $edit['id'] ?>">
-    <p class="text-sm text-on-surface-variant">Member: <strong class="text-on-surface"><?= e($edit['nama']) ?></strong></p>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Role</label>
-        <select name="role" class="form-input" <?= $can_assign ? '' : 'disabled' ?>>
-            <option value="member" <?= $edit['role']==='member'?'selected':'' ?>>Member</option>
-            <option value="staff" <?= $edit['role']==='staff'?'selected':'' ?>>Staff</option>
-            <option value="leader" <?= $edit['role']==='leader'?'selected':'' ?>>Leader</option>
-        </select>
-        <?php if (!$can_assign): ?><p class="text-xs text-on-surface-variant mt-1">Hanya Leader yang dapat mengubah role.</p><?php endif; ?>
+<?php if ($can_manage): ?>
+<div id="modalMember" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalMember')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg">Edit Member</h3>
+                <button type="button" onclick="closeModal('modalMember')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <form method="POST" action="" class="space-y-4" id="formMember">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="intent" value="update_member">
+                    <input type="hidden" name="id" id="memberId" value="">
+                    <p class="text-sm text-on-surface-variant">Member: <strong class="text-on-surface" id="memberNama"></strong></p>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Role</label>
+                        <select name="role" id="memberRole" class="form-input" <?= $can_assign ? '' : 'disabled' ?>>
+                            <option value="member">Member</option>
+                            <option value="staff">Staff</option>
+                            <option value="leader">Leader</option>
+                        </select>
+                        <?php if (!$can_assign): ?><p class="text-xs text-on-surface-variant mt-1">Hanya Leader yang dapat mengubah role.</p><?php endif; ?>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
+                        <select name="status" id="memberStatus" class="form-input">
+                            <option value="aktif">Aktif</option>
+                            <option value="nonaktif">Nonaktif</option>
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeModal('modalMember')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
-        <select name="status" class="form-input">
-            <option value="aktif" <?= $edit['status']==='aktif'?'selected':'' ?>>Aktif</option>
-            <option value="nonaktif" <?= $edit['status']==='nonaktif'?'selected':'' ?>>Nonaktif</option>
-        </select>
-    </div>
-    <div class="flex justify-end gap-2">
-        <button type="button" onclick="closeModal('modalMember')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
-        <button type="submit" class="btn-primary">Simpan</button>
-    </div>
-</form>
-<?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
-<script>document.addEventListener('DOMContentLoaded',()=>openModal('modalMember'));</script>
+</div>
+
+<script>
+function openMemberModal(row) {
+    document.getElementById('memberId').value = row.id;
+    document.getElementById('memberNama').textContent = row.nama;
+    document.getElementById('memberRole').value = row.role;
+    document.getElementById('memberStatus').value = row.status;
+    openModal('modalMember');
+}
+</script>
 <?php endif; ?>
 <?php require __DIR__ . '/../../components/footer.php'; ?>
