@@ -52,8 +52,17 @@ if ($can_manage && isset($_GET['delete'])) {
     redirect('/organisasi/' . $org_id . '/kegiatan');
 }
 
-$list = $pdo->prepare("SELECT * FROM kegiatan WHERE organisasi_id=? AND deleted_at IS NULL ORDER BY tanggal_mulai DESC");
-$list->execute([$org_id]); $list = $list->fetchAll();
+$search = trim($_GET['search'] ?? '');
+$sql = "SELECT * FROM kegiatan WHERE organisasi_id=? AND deleted_at IS NULL";
+$params = [$org_id];
+if ($search !== '') { $sql .= " AND (nama LIKE ? OR lokasi LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
+$sql .= " ORDER BY tanggal_mulai DESC";
+$list = $pdo->prepare($sql); $list->execute($params); $list = $list->fetchAll();
+
+if (($_GET['ajax'] ?? '') === 'table') {
+    include __DIR__ . '/../../components/tables/kegiatan.php';
+    exit;
+}
 
 $edit = null;
 if ($can_manage && isset($_GET['edit'])) {
@@ -71,34 +80,29 @@ if ($can_manage && isset($_GET['edit'])) {
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             <?= e($org['nama']) ?>
         </a>
-        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <h3 class="font-bold text-on-surface">Daftar Kegiatan</h3>
-                    <?php if ($can_manage): ?><button onclick="openModal('modalKegiatan')" type="button" class="btn-primary !h-8 !px-3 !text-xs">+ Tambah</button><?php endif; ?>
+        <div class="flex items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 </div>
+                <form method="GET" action="" class="w-full">
+                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari kegiatan..." autocomplete="off" data-live-search data-target="#kegiatan-table-body">
+                </form>
+            </div>
+            <?php if ($can_manage): ?><button onclick="openModal('modalKegiatan')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah kegiatan">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            </button><?php endif; ?>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant">
+                <h3 class="font-bold text-on-surface">Daftar Kegiatan</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead><tr><th>Nama</th><th>Tipe</th><th>Mulai</th><th>Lokasi</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
-                    <tbody>
-                        <?php foreach ($list as $row): ?>
-                        <tr>
-                            <td class="text-sm font-medium text-on-surface"><?= e($row['nama']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= ucfirst($row['tipe']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e(date('d M Y H:i', strtotime($row['tanggal_mulai']))) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['lokasi'] ?: '-') ?></td>
-                            <td><span class="badge <?= $row['status']==='berlangsung'?'bg-green-100 text-green-700':($row['status']==='selesai'?'bg-blue-100 text-blue-700':'bg-gray-100 text-gray-600') ?>"><?= ucfirst($row['status']) ?></span></td>
-                            <td class="text-right whitespace-nowrap">
-                                <a href="<?= url('organisasi/' . $org_id . '/kegiatan/' . $row['id']) ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-surface-low text-on-surface-variant text-xs font-semibold hover:bg-surface-high mr-1">Detail</a>
-                                <?php if ($can_manage): ?>
-                                <a href="?edit=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 mr-1">Edit</a>
-                                <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Arsipkan kegiatan ini?')" class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-error text-xs font-semibold hover:bg-red-100">Hapus</a>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($list)): ?><tr><td colspan="6" class="text-center text-on-surface-variant py-8">Belum ada kegiatan</td></tr><?php endif; ?>
+                    <tbody id="kegiatan-table-body">
+                        <?php include __DIR__ . '/../../components/tables/kegiatan.php'; ?>
                     </tbody>
                 </table>
             </div>

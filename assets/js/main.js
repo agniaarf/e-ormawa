@@ -33,6 +33,32 @@ function closeModal(id) {
     if (el) el.classList.add('hidden');
 }
 
+// Global live search
+function initLiveSearch() {
+    document.querySelectorAll('[data-live-search]').forEach(input => {
+        let t;
+        const target = input.dataset.target ? document.querySelector(input.dataset.target) : null;
+        input.addEventListener('keyup', () => {
+            clearTimeout(t);
+            t = setTimeout(() => {
+                if (target) {
+                    const url = new URL(location.href);
+                    url.searchParams.set(input.dataset.searchParam || 'search', input.value);
+                    url.searchParams.set('ajax', 'table');
+                    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                        .then(r => r.text())
+                        .then(html => { target.innerHTML = html; })
+                        .catch(() => input.form?.submit());
+                } else {
+                    input.form?.submit();
+                }
+            }, 350);
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initLiveSearch);
+
 // Auto close alert
 $(document).ready(function() {
     $('.alert-dismissible').delay(4000).fadeOut(300);

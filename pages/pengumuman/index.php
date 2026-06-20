@@ -77,11 +77,21 @@ if (isset($_GET['delete'])) {
 }
 
 // Listing
+$search = trim($_GET['search'] ?? '');
 if (is_super_admin()) {
-    $list = $pdo->query("SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id ORDER BY p.created_at DESC")->fetchAll();
+    $sql = "SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id WHERE 1=1";
+    $params = [];
 } else {
-    $stmt = $pdo->prepare("SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id WHERE p.tipe='global' OR p.organisasi_id IN (SELECT organisasi_id FROM user_organisasi WHERE user_id=? AND status='aktif') ORDER BY p.created_at DESC");
-    $stmt->execute([$user_id]); $list = $stmt->fetchAll();
+    $sql = "SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id WHERE (p.tipe='global' OR p.organisasi_id IN (SELECT organisasi_id FROM user_organisasi WHERE user_id=? AND status='aktif'))";
+    $params = [$user_id];
+}
+if ($search !== '') { $sql .= " AND p.judul LIKE ?"; $params[] = "%$search%"; }
+$sql .= " ORDER BY p.created_at DESC";
+$stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+
+if (($_GET['ajax'] ?? '') === 'table') {
+    include __DIR__ . '/../../components/tables/pengumuman.php';
+    exit;
 }
 
 $edit = null;
@@ -103,34 +113,29 @@ function canModifyPengumuman(array $p): bool {
 
 <main class="p-6 lg:ml-[280px]">
     <div class="max-w-6xl mx-auto space-y-6">
-        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <h3 class="font-bold text-on-surface">Daftar Pengumuman</h3>
-                    <?php if ($can_create): ?><button onclick="openModal('modalPengumuman')" type="button" class="btn-primary !h-8 !px-3 !text-xs">+ Tambah</button><?php endif; ?>
+        <div class="flex items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 </div>
+                <form method="GET" action="" class="w-full">
+                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari pengumuman..." autocomplete="off" data-live-search data-target="#pengumuman-table-body">
+                </form>
+            </div>
+            <?php if ($can_create): ?><button onclick="openModal('modalPengumuman')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengumuman">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            </button><?php endif; ?>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant">
+                <h3 class="font-bold text-on-surface">Daftar Pengumuman</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead><tr><th>Judul</th><th>Tipe</th><th>Organisasi</th><th>Tanggal</th><th class="text-right">Aksi</th></tr></thead>
-                    <tbody>
-                        <?php foreach ($list as $row): ?>
-                        <tr>
-                            <td class="text-sm font-medium text-on-surface"><?= e($row['judul']) ?></td>
-                            <td><span class="badge <?= $row['tipe']==='global'?'bg-blue-100 text-blue-700':'bg-purple-100 text-purple-700' ?>"><?= e($row['tipe']) ?></span></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['org_nama'] ?? '-') ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e(date('d M Y', strtotime($row['created_at']))) ?></td>
-                            <td class="text-right whitespace-nowrap">
-                                <?php if (canModifyPengumuman($row)): ?>
-                                <a href="?edit=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 mr-1">Edit</a>
-                                <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Yakin hapus?')" class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-error text-xs font-semibold hover:bg-red-100">Hapus</a>
-                                <?php else: ?>
-                                <span class="text-xs text-on-surface-variant">-</span>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($list)): ?><tr><td colspan="5" class="text-center text-on-surface-variant py-8">Tidak ada data</td></tr><?php endif; ?>
+                    <tbody id="pengumuman-table-body">
+                        <?php include __DIR__ . '/../../components/tables/pengumuman.php'; ?>
                     </tbody>
                 </table>
             </div>

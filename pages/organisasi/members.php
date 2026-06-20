@@ -60,6 +60,11 @@ if ($search !== '') { $sql .= " AND (u.nama LIKE ? OR u.nim LIKE ?)"; $params[] 
 $sql .= " ORDER BY FIELD(uo.role,'leader','staff','member'), u.nama";
 $stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
 
+if (($_GET['ajax'] ?? '') === 'table') {
+    include __DIR__ . '/../../components/tables/members.php';
+    exit;
+}
+
 $edit = null;
 if ($can_manage && isset($_GET['edit'])) {
     $edit = $pdo->prepare("SELECT uo.*, u.nama FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.id=? AND uo.organisasi_id=? LIMIT 1");
@@ -87,33 +92,20 @@ function memberRoleBadge(string $role): string {
         <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
             <div class="px-6 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h3 class="font-bold text-on-surface">Daftar Member</h3>
-                <form method="GET" action="" class="flex gap-2">
-                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-9 !text-sm" placeholder="Cari member...">
-                    <button type="submit" class="btn-primary !h-9 !px-3 !text-sm">Cari</button>
-                </form>
+                <div class="relative max-w-xs">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                    </div>
+                    <form method="GET" action="" class="w-full">
+                        <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari member..." autocomplete="off" data-live-search data-target="#member-table-body">
+                    </form>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead><tr><th>Nama</th><th>NIM</th><th>Role</th><th>Status</th><?php if ($can_manage): ?><th class="text-right">Aksi</th><?php endif; ?></tr></thead>
-                    <tbody>
-                        <?php foreach ($list as $row): ?>
-                        <tr>
-                            <td class="text-sm font-medium text-on-surface"><?= e($row['nama']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['nim']) ?></td>
-                            <td><span class="badge <?= memberRoleBadge($row['role']) ?>"><?= e(org_role_label($row['role'])) ?></span></td>
-                            <td><span class="badge <?= $row['status']==='aktif'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600' ?>"><?= e($row['status']) ?></span></td>
-                            <?php if ($can_manage): ?>
-                            <td class="text-right whitespace-nowrap">
-                                <a href="?edit=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 mr-1">Edit</a>
-                                <form method="POST" action="" class="inline" onsubmit="return confirm('Keluarkan member ini?')">
-                                    <?= csrf_input() ?><input type="hidden" name="intent" value="remove_member"><input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-error text-xs font-semibold hover:bg-red-100">Keluarkan</button>
-                                </form>
-                            </td>
-                            <?php endif; ?>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($list)): ?><tr><td colspan="<?= $can_manage?5:4 ?>" class="text-center text-on-surface-variant py-8">Belum ada member</td></tr><?php endif; ?>
+                    <tbody id="member-table-body">
+                        <?php include __DIR__ . '/../../components/tables/members.php'; ?>
                     </tbody>
                 </table>
             </div>
@@ -153,5 +145,4 @@ $modal_id = 'modalMember'; $modal_title = 'Edit Member'; ob_start();
 <?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
 <script>document.addEventListener('DOMContentLoaded',()=>openModal('modalMember'));</script>
 <?php endif; ?>
-
 <?php require __DIR__ . '/../../components/footer.php'; ?>

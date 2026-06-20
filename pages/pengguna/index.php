@@ -66,6 +66,12 @@ $sql .= " ORDER BY u.created_at DESC";
 $stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
 
 $roles = $pdo->query("SELECT * FROM roles ORDER BY id")->fetchAll();
+
+if (($_GET['ajax'] ?? '') === 'table') {
+    include __DIR__ . '/../../components/tables/pengguna.php';
+    exit;
+}
+
 $edit = null;
 if (isset($_GET['edit'])) {
     $edit = $pdo->prepare("SELECT * FROM users WHERE id=? LIMIT 1");
@@ -78,43 +84,31 @@ if (isset($_GET['edit'])) {
 
 <main class="p-6 lg:ml-[280px]">
     <div class="max-w-6xl mx-auto space-y-6">
-        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <h3 class="font-bold text-on-surface"><?= $show_arsip ? 'Arsip Pengguna' : 'Daftar Pengguna' ?></h3>
-                    <?php if (!$show_arsip): ?><button onclick="openModal('modalPengguna')" type="button" class="btn-primary !h-8 !px-3 !text-xs">+ Tambah</button><?php endif; ?>
-                    <a href="?<?= $show_arsip ? '' : 'arsip=1' ?>" class="text-xs font-semibold text-primary hover:underline"><?= $show_arsip ? '← Kembali' : 'Lihat Arsip' ?></a>
+        <div class="flex items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 </div>
-                <form method="GET" action="" class="flex gap-2">
+                <form method="GET" action="" class="w-full">
                     <?php if ($show_arsip): ?><input type="hidden" name="arsip" value="1"><?php endif; ?>
-                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-9 !text-sm" placeholder="Cari nama/email/nim...">
-                    <button type="submit" class="btn-primary !h-9 !px-3 !text-sm">Cari</button>
+                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari nama/email/nim..." autocomplete="off" data-live-search data-target="#pengguna-table-body">
                 </form>
+            </div>
+            <?php if (!$show_arsip): ?><button onclick="openModal('modalPengguna')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah pengguna">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            </button><?php endif; ?>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center gap-3">
+                <h3 class="font-bold text-on-surface"><?= $show_arsip ? 'Arsip Pengguna' : 'Daftar Pengguna' ?></h3>
+                <a href="?<?= $show_arsip ? '' : 'arsip=1' ?>" class="text-xs font-semibold text-primary hover:underline"><?= $show_arsip ? '← Kembali' : 'Lihat Arsip' ?></a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead><tr><th>Nama</th><th>Email</th><th>NIM</th><th>Role</th><th>Status</th><th class="text-right">Aksi</th></tr></thead>
-                    <tbody>
-                        <?php foreach ($list as $row): ?>
-                        <tr>
-                            <td class="text-sm font-medium text-on-surface"><?= e($row['nama']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['email']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['nim']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['role_name']) ?></td>
-                            <td><span class="badge <?= $row['status']==='aktif'?'bg-green-100 text-green-700':($row['status']==='menunggu'?'bg-yellow-100 text-yellow-700':'bg-gray-100 text-gray-600') ?>"><?= e($row['status']) ?></span></td>
-                            <td class="text-right whitespace-nowrap">
-                                <?php if ($show_arsip): ?>
-                                    <a href="?arsip=1&restore=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100">Pulihkan</a>
-                                <?php else: ?>
-                                    <a href="?edit=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 mr-1">Edit</a>
-                                    <?php if ($row['role_id'] != 1): ?>
-                                    <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Arsipkan pengguna ini?')" class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-error text-xs font-semibold hover:bg-red-100">Hapus</a>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($list)): ?><tr><td colspan="6" class="text-center text-on-surface-variant py-8">Tidak ada data</td></tr><?php endif; ?>
+                    <tbody id="pengguna-table-body">
+                        <?php include __DIR__ . '/../../components/tables/pengguna.php'; ?>
                     </tbody>
                 </table>
             </div>

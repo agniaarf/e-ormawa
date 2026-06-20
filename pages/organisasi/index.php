@@ -137,6 +137,12 @@ if (is_super_admin()) {
     $pend->execute([$user_id]);
     $my_pending = array_column($pend->fetchAll(), 'organisasi_id');
 }
+
+// AJAX partial for Super Admin table
+if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
+    include __DIR__ . '/../../components/tables/organisasi.php';
+    exit;
+}
 ?>
 <?php require __DIR__ . '/../../components/head.php'; ?>
 <?php require __DIR__ . '/../../components/sidebar.php'; ?>
@@ -145,42 +151,29 @@ if (is_super_admin()) {
 <main class="p-6 lg:ml-[280px]">
     <div class="max-w-6xl mx-auto space-y-6">
     <?php if (is_super_admin()): ?>
-        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
-            <div class="px-6 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                    <h3 class="font-bold text-on-surface"><?= $show_arsip ? 'Arsip Organisasi' : 'Daftar Organisasi' ?></h3>
-                    <?php if (!$show_arsip): ?><button onclick="openModal('modalOrganisasi')" type="button" class="btn-primary !h-8 !px-3 !text-xs">+ Tambah</button><?php endif; ?>
-                    <a href="?<?= $show_arsip ? '' : 'arsip=1' ?>" class="text-xs font-semibold text-primary hover:underline"><?= $show_arsip ? '← Kembali' : 'Lihat Arsip' ?></a>
+        <div class="flex items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
                 </div>
-                <form method="GET" action="" class="flex gap-2">
-                    <?php if ($show_arsip): ?><input type="hidden" name="arsip" value="1"><?php endif; ?>
-                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-9 !text-sm" placeholder="Cari organisasi...">
-                    <button type="submit" class="btn-primary !h-9 !px-3 !text-sm">Cari</button>
+                <form method="GET" action="" class="w-full">
+                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari organisasi..." autocomplete="off" data-live-search data-target="#org-table-body">
                 </form>
+            </div>
+            <button onclick="openModal('modalOrganisasi')" type="button" class="btn-primary !w-10 !h-10 !p-0 !rounded-full flex items-center justify-center" title="Tambah organisasi">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-outline-variant">
+                <h3 class="font-bold text-on-surface">Daftar Organisasi</h3>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full data-table">
                     <thead><tr><th>Nama</th><th>Singkatan</th><th>Leader</th><th>Status</th><th>Dibuat</th><th class="text-right">Aksi</th></tr></thead>
-                    <tbody>
-                        <?php foreach ($list as $row): ?>
-                        <tr>
-                            <td class="text-sm font-medium text-on-surface"><?= e($row['nama']) ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['singkatan'] ?? '-') ?></td>
-                            <td class="text-sm text-on-surface-variant"><?= e($row['leader_nama'] ?? '-') ?></td>
-                            <td><span class="badge <?= $row['status']==='aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600' ?>"><?= e($row['status']) ?></span></td>
-                            <td class="text-sm text-on-surface-variant"><?= e(date('d M Y', strtotime($row['created_at']))) ?></td>
-                            <td class="text-right whitespace-nowrap">
-                                <?php if ($show_arsip): ?>
-                                    <a href="?arsip=1&restore=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-green-50 text-green-700 text-xs font-semibold hover:bg-green-100">Pulihkan</a>
-                                <?php else: ?>
-                                    <a href="<?= url('organisasi/' . $row['id']) ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-surface-low text-on-surface-variant text-xs font-semibold hover:bg-surface-high mr-1">Lihat</a>
-                                    <a href="?edit=<?= $row['id'] ?>" class="inline-flex items-center px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 mr-1">Edit</a>
-                                    <a href="?delete=<?= $row['id'] ?>" onclick="return confirm('Arsipkan organisasi ini?')" class="inline-flex items-center px-2.5 py-1 rounded-md bg-red-50 text-error text-xs font-semibold hover:bg-red-100">Hapus</a>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if (empty($list)): ?><tr><td colspan="6" class="text-center text-on-surface-variant py-8">Tidak ada data</td></tr><?php endif; ?>
+                    <tbody id="org-table-body">
+                        <?php include __DIR__ . '/../../components/tables/organisasi.php'; ?>
                     </tbody>
                 </table>
             </div>
@@ -188,10 +181,14 @@ if (is_super_admin()) {
     <?php else: ?>
         <div class="flex items-center justify-between gap-3">
             <h2 class="text-xl font-bold text-on-surface">Jelajah Organisasi</h2>
-            <form method="GET" action="" class="flex gap-2">
-                <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-9 !text-sm" placeholder="Cari organisasi...">
-                <button type="submit" class="btn-primary !h-9 !px-3 !text-sm">Cari</button>
-            </form>
+            <div class="relative max-w-xs">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                </div>
+                <form method="GET" action="" class="w-full">
+                    <input type="text" name="search" value="<?= e($search) ?>" class="form-input !h-10 !pl-10 !text-sm w-full" placeholder="Cari organisasi..." autocomplete="off" data-live-search>
+                </form>
+            </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <?php foreach ($list as $row):
