@@ -13,6 +13,17 @@
 .org-section-chevron.collapsed { transform: rotate(-90deg); }
 
 .member-card { border-radius: 1rem; overflow: hidden; border: 1px solid #c1c8c3; box-shadow: 0 4px 20px rgba(59, 93, 80, 0.08); }
+
+.animate-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both, pulseBadge 1.5s ease-in-out infinite; }
+@keyframes popIn {
+    0% { transform: scale(0); opacity: 0; }
+    70% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); }
+}
+@keyframes pulseBadge {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(186, 26, 26, 0); }
+}
 .member-card-header { background: #244539; padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; }
 .member-card-body { background: white; padding: 1.5rem; }
 .member-card-footer { background: #244539; padding: 0.75rem 1.25rem; text-align: center; }
