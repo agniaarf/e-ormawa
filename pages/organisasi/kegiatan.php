@@ -113,7 +113,7 @@ if ($can_manage && isset($_GET['edit'])) {
 <?php if ($can_manage):
 $modal_id = 'modalKegiatan'; $modal_title = $edit ? 'Edit Kegiatan' : 'Tambah Kegiatan'; ob_start();
 ?>
-<form method="POST" action="" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<form method="POST" action="" class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <?= csrf_input() ?>
     <?php if ($edit): ?><input type="hidden" name="id" value="<?= $edit['id'] ?>"><?php endif; ?>
     <div class="md:col-span-2">
@@ -128,7 +128,15 @@ $modal_id = 'modalKegiatan'; $modal_title = $edit ? 'Edit Kegiatan' : 'Tambah Ke
             <?php endforeach; ?>
         </select>
     </div>
-    <div class="md:col-span-3">
+    <div>
+        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
+        <select name="status" class="form-input">
+            <?php foreach (['rencana'=>'Rencana','berlangsung'=>'Berlangsung','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'] as $k=>$v): ?>
+            <option value="<?= $k ?>" <?= ($edit['status']??'')===$k?'selected':'' ?>><?= $v ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="md:col-span-2">
         <label class="block text-sm font-semibold text-on-surface mb-1.5">Deskripsi</label>
         <textarea name="deskripsi" rows="2" class="form-input py-2"><?= e($edit['deskripsi'] ?? '') ?></textarea>
     </div>
@@ -140,17 +148,9 @@ $modal_id = 'modalKegiatan'; $modal_title = $edit ? 'Edit Kegiatan' : 'Tambah Ke
         <label class="block text-sm font-semibold text-on-surface mb-1.5">Tanggal Selesai</label>
         <input type="datetime-local" name="tanggal_selesai" value="<?= e($edit['tanggal_selesai'] ? date('Y-m-d\TH:i', strtotime($edit['tanggal_selesai'])) : '') ?>" class="form-input">
     </div>
-    <div>
+    <div class="md:col-span-2">
         <label class="block text-sm font-semibold text-on-surface mb-1.5">Lokasi</label>
         <input type="text" name="lokasi" value="<?= e($edit['lokasi'] ?? '') ?>" class="form-input">
-    </div>
-    <div>
-        <label class="block text-sm font-semibold text-on-surface mb-1.5">Status</label>
-        <select name="status" class="form-input">
-            <?php foreach (['rencana'=>'Rencana','berlangsung'=>'Berlangsung','selesai'=>'Selesai','dibatalkan'=>'Dibatalkan'] as $k=>$v): ?>
-            <option value="<?= $k ?>" <?= ($edit['status']??'')===$k?'selected':'' ?>><?= $v ?></option>
-            <?php endforeach; ?>
-        </select>
     </div>
     <div class="md:col-span-2 flex justify-end gap-2">
         <button type="button" onclick="closeModal('modalKegiatan')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Batal</button>
