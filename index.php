@@ -30,6 +30,7 @@ $routes = [
     'organisasi/{org}/permintaan'            => 'organisasi/requests.php',
     'organisasi/{org}/kegiatan'              => 'organisasi/kegiatan.php',
     'organisasi/{org}/kartu'                 => 'organisasi/kartu_anggota.php',
+    'organisasi/{org}/jadwal'                => 'organisasi/jadwal.php',
     'organisasi/{org}/kegiatan/{kid}'        => 'kegiatan/detail.php',
     'pengumuman'                             => 'pengumuman/index.php',
     'pengguna'                               => 'pengguna/index.php',
