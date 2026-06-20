@@ -161,4 +161,58 @@ $modal_id = 'modalKegiatan'; $modal_title = $edit ? 'Edit Kegiatan' : 'Tambah Ke
 <?php if ($edit): ?><script>document.addEventListener('DOMContentLoaded',()=>openModal('modalKegiatan'));</script><?php endif; ?>
 <?php endif; ?>
 
+<div id="detailModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeDetailModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg" id="detailModalTitle">Detail Kegiatan</h3>
+                <button type="button" onclick="closeDetailModal()" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4" id="detailModalContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+function openDetailModal(keg) {
+    const fmt = (d) => d ? new Date(d).toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-';
+    const statusClass = keg.status === 'berlangsung' ? 'bg-green-100 text-green-700' : (keg.status === 'selesai' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600');
+    document.getElementById('detailModalTitle').textContent = keg.nama || 'Detail Kegiatan';
+    document.getElementById('detailModalContent').innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+            <h2 class="text-xl font-bold text-on-surface">${keg.nama || '-'}</h2>
+            <span class="badge ${statusClass}">${keg.status ? keg.status.charAt(0).toUpperCase() + keg.status.slice(1) : '-'}</span>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <span class="badge bg-primary/10 text-primary text-xs">${keg.tipe ? keg.tipe.charAt(0).toUpperCase() + keg.tipe.slice(1) : '-'}</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+                <p class="text-on-surface-variant">Tanggal Mulai</p>
+                <p class="font-semibold text-on-surface">${fmt(keg.tanggal_mulai)}</p>
+            </div>
+            <div>
+                <p class="text-on-surface-variant">Tanggal Selesai</p>
+                <p class="font-semibold text-on-surface">${fmt(keg.tanggal_selesai)}</p>
+            </div>
+            <div class="sm:col-span-2">
+                <p class="text-on-surface-variant">Lokasi</p>
+                <p class="font-semibold text-on-surface">${keg.lokasi || '-'}</p>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm text-on-surface-variant mb-1">Deskripsi</p>
+            <p class="text-sm text-on-surface leading-relaxed">${keg.deskripsi ? keg.deskripsi.replace(/\n/g, '<br>') : 'Tidak ada deskripsi.'}</p>
+        </div>
+    `;
+    document.getElementById('detailModal').classList.remove('hidden');
+}
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
+</script>
+
 <?php require __DIR__ . '/../../components/footer.php'; ?>
