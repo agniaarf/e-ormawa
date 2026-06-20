@@ -57,10 +57,10 @@ $leader->execute([$org_id]); $leader_nama = $leader->fetchColumn() ?: '-';
 $member_count = (int) ($pdo->query("SELECT COUNT(*) FROM user_organisasi WHERE organisasi_id={$org_id} AND status='aktif'")->fetchColumn());
 $kegiatan_count = (int) ($pdo->query("SELECT COUNT(*) FROM kegiatan WHERE organisasi_id={$org_id} AND deleted_at IS NULL")->fetchColumn());
 
-$is_pending = false;
+$pending_status = null;
 if (!$my_role) {
-    $p = $pdo->prepare("SELECT id FROM permintaan_bergabung WHERE user_id=? AND organisasi_id=? AND status='menunggu' LIMIT 1");
-    $p->execute([$user_id, $org_id]); $is_pending = (bool) $p->fetch();
+    $p = $pdo->prepare("SELECT status FROM permintaan_bergabung WHERE user_id=? AND organisasi_id=? AND status IN ('menunggu','administrasi','wawancara') LIMIT 1");
+    $p->execute([$user_id, $org_id]); $pending_status = $p->fetchColumn() ?: null;
 }
 ?>
 <?php require __DIR__ . '/../../components/head.php'; ?>
@@ -100,8 +100,12 @@ if (!$my_role) {
             </div>
             <?php if (!$my_role): ?>
             <div class="mt-5 pt-5 border-t border-outline-variant">
-                <?php if ($is_pending): ?>
-                    <span class="badge bg-yellow-100 text-yellow-700">Permintaan Anda sedang menunggu persetujuan</span>
+                <?php if ($pending_status): ?>
+                    <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+                        <p class="text-sm font-semibold text-yellow-800">Permintaan Anda sedang dalam proses rekrutmen</p>
+                        <p class="text-xs text-yellow-700 mt-0.5">Status saat ini: <strong><?= e(ucfirst($pending_status)) ?></strong></p>
+                        <?= recruitment_stepper($pending_status) ?>
+                    </div>
                 <?php else: ?>
                     <button onclick="openModal('modalJoin')" class="btn-primary">Gabung Organisasi</button>
                 <?php endif; ?>
@@ -164,7 +168,7 @@ $modal_id = 'modalEditOrg'; $modal_title = 'Edit Profil Organisasi'; ob_start();
 <?php $modal_content = ob_get_clean(); require __DIR__ . '/../../components/modal.php'; ?>
 <?php endif; ?>
 
-<?php if (!$my_role && !$is_pending):
+<?php if (!$my_role && !$pending_status):
 $modal_id = 'modalJoin'; $modal_title = 'Gabung Organisasi'; ob_start();
 ?>
 <form method="POST" action="<?= url('organisasi/' . $org_id) ?>" class="space-y-4">

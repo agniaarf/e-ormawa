@@ -18,7 +18,7 @@ if (is_super_admin()) {
     $orgs = my_organisasi($user_id);
     $total_organisasi = $pdo->query("SELECT COUNT(*) FROM organisasi WHERE status='aktif' AND deleted_at IS NULL")->fetchColumn();
     $my_org_count = count($orgs);
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM permintaan_bergabung WHERE user_id=? AND status='menunggu'");
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM permintaan_bergabung WHERE user_id=? AND status IN ('menunggu','administrasi','wawancara')");
     $stmt->execute([$user_id]); $pending_req = $stmt->fetchColumn();
     $stmt = $pdo->prepare("SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id WHERE p.tipe='global' OR p.organisasi_id IN (SELECT organisasi_id FROM user_organisasi WHERE user_id=? AND status='aktif') ORDER BY p.created_at DESC LIMIT 5");
     $stmt->execute([$user_id]); $pengumuman = $stmt->fetchAll();

@@ -207,6 +207,32 @@ function upload_file(array $file, string $folder): ?string {
     return null;
 }
 
+// ---------- Recruitment Stepper ----------
+function recruitment_stepper(string $currentStatus): string {
+    $steps = ['menunggu' => 'Pengajuan', 'administrasi' => 'Administrasi', 'wawancara' => 'Wawancara', 'diterima' => 'Diterima'];
+    $statusOrder = array_keys($steps);
+    $currentIndex = array_search($currentStatus, $statusOrder, true);
+    if ($currentIndex === false) {
+        $currentIndex = $currentStatus === 'ditolak' ? -2 : -1;
+    }
+
+    $html = '<div class="flex items-center gap-1 mt-3" aria-label="Tahapan rekrutmen">';
+    foreach ($statusOrder as $i => $status) {
+        $isDone = ($currentIndex !== false && $i <= $currentIndex);
+        $isCurrent = $status === $currentStatus;
+        $color = $isCurrent ? 'bg-primary text-white' : ($isDone ? 'bg-primary/80 text-white' : 'bg-surface-dim text-on-surface-variant');
+        $html .= '<div class="flex items-center">';
+        $html .= '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold ' . $color . '">' . ($i + 1) . '</span>';
+        $html .= '<span class="ml-1 text-[10px] ' . ($isCurrent || $isDone ? 'text-primary font-semibold' : 'text-on-surface-variant') . '">' . e($steps[$status]) . '</span>';
+        if ($i < count($statusOrder) - 1) {
+            $html .= '<span class="w-3 h-px mx-1 ' . ($isDone ? 'bg-primary' : 'bg-outline-variant') . '"></span>';
+        }
+        $html .= '</div>';
+    }
+    $html .= '</div>';
+    return $html;
+}
+
 // ---------- Logging ----------
 function log_activity(int $user_id, string $aksi, string $detail = ''): void {
     global $pdo;

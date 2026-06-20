@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $org_id = (int) ($_POST['org_id'] ?? 0);
         $motivasi = trim($_POST['motivasi'] ?? '');
         $existing_role = get_org_role($user_id, $org_id);
-        $pending = $pdo->prepare("SELECT id FROM permintaan_bergabung WHERE user_id=? AND organisasi_id=? AND status='menunggu' LIMIT 1");
+        $pending = $pdo->prepare("SELECT id FROM permintaan_bergabung WHERE user_id=? AND organisasi_id=? AND status IN ('menunggu','administrasi','wawancara') LIMIT 1");
         $pending->execute([$user_id, $org_id]);
         if ($existing_role) {
             set_flash('error', 'Anda sudah menjadi anggota organisasi ini.');
@@ -133,9 +133,10 @@ if (is_super_admin()) {
     $mine->execute([$user_id]);
     $my_roles = [];
     foreach ($mine->fetchAll() as $r) { $my_roles[(int)$r['organisasi_id']] = $r['role']; }
-    $pend = $pdo->prepare("SELECT organisasi_id FROM permintaan_bergabung WHERE user_id=? AND status='menunggu'");
+    $pend = $pdo->prepare("SELECT organisasi_id, status FROM permintaan_bergabung WHERE user_id=? AND status IN ('menunggu','administrasi','wawancara')");
     $pend->execute([$user_id]);
-    $my_pending = array_column($pend->fetchAll(), 'organisasi_id');
+    $my_pending = [];
+    foreach ($pend->fetchAll() as $p) { $my_pending[(int)$p['organisasi_id']] = $p['status']; }
 }
 
 // AJAX partial for Super Admin table
@@ -194,7 +195,7 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
             <?php foreach ($list as $row):
                 $oid = (int) $row['id'];
                 $role_here = $my_roles[$oid] ?? null;
-                $is_pending = in_array($oid, $my_pending);
+                $pending_status = $my_pending[$oid] ?? null;
             ?>
             <div class="bg-white rounded-2xl border border-outline-variant shadow-card card-hover p-6 flex flex-col">
                 <div class="flex items-center gap-3 mb-3">
@@ -209,12 +210,15 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
                     <a href="<?= url('organisasi/' . $oid) ?>" class="flex-1 text-center px-3 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-semibold hover:bg-surface-low">Lihat Detail</a>
                     <?php if ($role_here): ?>
                         <span class="badge bg-green-100 text-green-700 text-xs"><?= e(org_role_label($role_here)) ?></span>
-                    <?php elseif ($is_pending): ?>
-                        <span class="badge bg-yellow-100 text-yellow-700 text-xs">Menunggu</span>
+                    <?php elseif ($pending_status): ?>
+                        <span class="badge bg-yellow-100 text-yellow-700 text-xs"><?= e(ucfirst($pending_status)) ?></span>
                     <?php else: ?>
                         <button type="button" onclick='openJoin(<?= $oid ?>, <?= json_encode($row['nama']) ?>)' class="btn-primary !h-auto !py-2 !px-3 !text-sm">Gabung</button>
                     <?php endif; ?>
                 </div>
+                <?php if ($pending_status): ?>
+                <div class="mt-3"><?= recruitment_stepper($pending_status) ?></div>
+                <?php endif; ?>
             </div>
             <?php endforeach; ?>
             <?php if (empty($list)): ?><div class="col-span-full text-center text-on-surface-variant py-12">Belum ada organisasi tersedia.</div><?php endif; ?>

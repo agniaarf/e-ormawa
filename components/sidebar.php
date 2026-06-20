@@ -25,8 +25,10 @@ $icn = [
     'kegiatan' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>',
     'member' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>',
     'inbox' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z"/></svg>',
+    'card' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-1.5-6.75H3.75c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h16.5c.621 0 1.125-.504 1.125-1.125V3.375c0-.621-.504-1.125-1.125-1.125zM6.75 15.75h3M6.75 12h1.5m-1.5 7.5h6.75"/></svg>',
     'profile' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>',
     'bell' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>',
+    'badge' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.746 3.746 0 01-1.043 3.296 3.746 3.746 0 01-3.296 1.043A3.746 3.746 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.746 3.746 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.746 3.746 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>',
 ];
 
 $menus = [];
@@ -50,9 +52,9 @@ if ($role === 'Super Admin') {
         ['page'=>'notifikasi','label'=>'Notifikasi','url'=>url('notifikasi'),'icon'=>$icn['bell'],'active'=>$current==='notifikasi'],
     ];
     // Build per-organisation submenus based on the user's org role
-    foreach (my_organisasi((int)($_SESSION['user_id'] ?? 0)) as $org) {
-        $oid = (int) $org['id'];
-        $r = $org['my_role'];
+    foreach (my_organisasi((int)($_SESSION['user_id'] ?? 0)) as $o) {
+        $oid = (int) $o['id'];
+        $r = $o['my_role'];
         $items = [];
         if ($r === 'leader') {
             $items[] = ['label'=>'Kelola Organisasi','url'=>url('organisasi/'.$oid),'icon'=>$icn['org'],'active'=>$current==='org_detail' && $current_org_id===$oid];
@@ -61,10 +63,11 @@ if ($role === 'Super Admin') {
         }
         $items[] = ['label'=>($r==='member'?'Lihat Member':'Manajemen Member'),'url'=>url('organisasi/'.$oid.'/member'),'icon'=>$icn['member'],'active'=>$current==='org_member' && $current_org_id===$oid];
         $items[] = ['label'=>($r==='member'?'Lihat Kegiatan':'Manajemen Kegiatan'),'url'=>url('organisasi/'.$oid.'/kegiatan'),'icon'=>$icn['kegiatan'],'active'=>$current==='org_kegiatan' && $current_org_id===$oid];
+        $items[] = ['label'=>'Kartu Anggota','url'=>url('organisasi/'.$oid.'/kartu'),'icon'=>$icn['card'],'active'=>$current==='org_kartu' && $current_org_id===$oid];
         if (in_array($r, ['leader','staff'], true)) {
             $items[] = ['label'=>'Permintaan Bergabung','url'=>url('organisasi/'.$oid.'/permintaan'),'icon'=>$icn['inbox'],'active'=>$current==='org_permintaan' && $current_org_id===$oid];
         }
-        $org_groups[] = ['id'=>$oid, 'name'=>$org['singkatan'] ?: $org['nama'], 'role'=>$r, 'items'=>$items];
+        $org_groups[] = ['id'=>$oid, 'name'=>$o['singkatan'] ?: $o['nama'], 'role'=>$r, 'items'=>$items];
     }
 }
 ?>
