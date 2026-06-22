@@ -103,12 +103,6 @@ if ($role === 'Super Admin') {
             </div>
             <?php endforeach; ?>
         </nav>
-        <div class="p-4 border-t border-white/10">
-            <a href="<?= BASE_URL ?>/logout.php" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-white/80 hover:bg-white/10 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9.75"/></svg>
-                <span class="text-sm font-medium">Keluar</span>
-            </a>
-        </div>
     </div>
 </aside>
 <div id="sidebar-overlay" class="fixed inset-0 z-30 bg-black/50 hidden lg:hidden" onclick="toggleSidebar()"></div>

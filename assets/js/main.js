@@ -63,6 +63,25 @@ function initLiveSearch() {
     });
 }
 
+function toggleProfileDropdown() {
+    const menu = document.getElementById('profile-menu');
+    const chevron = document.getElementById('profile-chevron');
+    if (menu && chevron) {
+        menu.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+    }
+}
+
+document.addEventListener('click', function (e) {
+    const wrapper = document.getElementById('profile-dropdown');
+    const menu = document.getElementById('profile-menu');
+    const chevron = document.getElementById('profile-chevron');
+    if (wrapper && menu && !wrapper.contains(e.target)) {
+        menu.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+    }
+});
+
 document.addEventListener('DOMContentLoaded', initLiveSearch);
 
 // Auto close alert
