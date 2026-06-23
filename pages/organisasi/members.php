@@ -54,11 +54,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $search = trim($_GET['search'] ?? '');
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+
 $sql = "SELECT uo.*, u.nama, u.nim, u.email FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=?";
 $params = [$org_id];
 if ($search !== '') { $sql .= " AND (u.nama LIKE ? OR u.nim LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
 $sql .= " ORDER BY FIELD(uo.role,'leader','staff','member'), u.nama";
-$stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+$result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+$list = $result['list'];
+$p = $result['p'];
 
 if (($_GET['ajax'] ?? '') === 'table') {
     include __DIR__ . '/../../components/tables/members.php';

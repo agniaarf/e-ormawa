@@ -9,11 +9,16 @@ $current_page = 'log';
 $pdo = db();
 
 $search = trim($_GET['search'] ?? '');
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+
 $sql = "SELECT al.*, u.nama FROM activity_log al LEFT JOIN users u ON al.user_id=u.id WHERE 1=1";
 $params = [];
 if ($search !== '') { $sql .= " AND (u.nama LIKE ? OR al.aksi LIKE ? OR al.detail LIKE ?)"; $params = ["%$search%","%$search%","%$search%"]; }
-$sql .= " ORDER BY al.created_at DESC LIMIT 200";
-$stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+$sql .= " ORDER BY al.created_at DESC";
+$result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+$list = $result['list'];
+$p = $result['p'];
 
 if (($_GET['ajax'] ?? '') === 'table') {
     include __DIR__ . '/../../components/tables/log.php';
@@ -28,7 +33,7 @@ if (($_GET['ajax'] ?? '') === 'table') {
     <div class="max-w-6xl mx-auto space-y-6">
         <div class="bg-white rounded-2xl border border-outline-variant shadow-card overflow-hidden">
             <div class="px-6 py-4 border-b border-outline-variant flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h3 class="font-bold text-on-surface">Audit Trail (200 terbaru)</h3>
+                <h3 class="font-bold text-on-surface">Audit Trail</h3>
                 <div class="relative max-w-xs">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <svg class="w-4 h-4 text-on-surface-variant" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>

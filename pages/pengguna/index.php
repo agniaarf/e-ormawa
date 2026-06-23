@@ -59,11 +59,16 @@ if (isset($_GET['restore'])) {
 
 $show_arsip = isset($_GET['arsip']);
 $search = trim($_GET['search'] ?? '');
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+
 $sql = "SELECT u.*, r.nama AS role_name FROM users u JOIN roles r ON u.role_id=r.id WHERE u.deleted_at IS " . ($show_arsip ? 'NOT NULL' : 'NULL');
 $params = [];
 if ($search !== '') { $sql .= " AND (u.nama LIKE ? OR u.email LIKE ? OR u.nim LIKE ?)"; $params = ["%$search%","%$search%","%$search%"]; }
 $sql .= " ORDER BY u.created_at DESC";
-$stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+$result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+$list = $result['list'];
+$p = $result['p'];
 
 $roles = $pdo->query("SELECT * FROM roles ORDER BY id")->fetchAll();
 

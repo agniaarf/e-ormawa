@@ -53,11 +53,16 @@ if ($can_manage && isset($_GET['delete'])) {
 }
 
 $search = trim($_GET['search'] ?? '');
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+
 $sql = "SELECT * FROM kegiatan WHERE organisasi_id=? AND deleted_at IS NULL";
 $params = [$org_id];
 if ($search !== '') { $sql .= " AND (nama LIKE ? OR lokasi LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
 $sql .= " ORDER BY tanggal_mulai DESC";
-$list = $pdo->prepare($sql); $list->execute($params); $list = $list->fetchAll();
+$result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+$list = $result['list'];
+$p = $result['p'];
 
 if (($_GET['ajax'] ?? '') === 'table') {
     include __DIR__ . '/../../components/tables/kegiatan.php';

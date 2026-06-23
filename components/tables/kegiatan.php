@@ -23,3 +23,6 @@ foreach ($list as $row):
 </tr>
 <?php endforeach; ?>
 <?php if (empty($list)): ?><tr><td colspan="6" class="text-center text-on-surface-variant py-8">Belum ada kegiatan</td></tr><?php endif; ?>
+<?php if (!empty($list)): ?>
+<tr><td colspan="6" class="bg-white border-t border-outline-variant"><?= renderPagination($p) ?></td></tr>
+<?php endif; ?>

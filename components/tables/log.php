@@ -10,3 +10,6 @@ foreach ($list as $log):
 </tr>
 <?php endforeach; ?>
 <?php if (empty($list)): ?><tr><td colspan="5" class="text-center text-on-surface-variant py-8">Belum ada aktivitas</td></tr><?php endif; ?>
+<?php if (!empty($list)): ?>
+<tr><td colspan="5" class="bg-white border-t border-outline-variant"><?= renderPagination($p) ?></td></tr>
+<?php endif; ?>

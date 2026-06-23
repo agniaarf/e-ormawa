@@ -260,3 +260,86 @@ function unread_notif_count(): int {
     $stmt->execute([$_SESSION['user_id']]);
     return (int) $stmt->fetchColumn();
 }
+
+// ---------- Pagination ----------
+function paginate(int $total, int $page, int $perPage = 10): array {
+    $totalPages = max(1, (int) ceil($total / $perPage));
+    $page = max(1, min($page, $totalPages));
+    $offset = ($page - 1) * $perPage;
+    return [
+        'page' => $page,
+        'perPage' => $perPage,
+        'total' => $total,
+        'totalPages' => $totalPages,
+        'offset' => $offset,
+        'hasPrev' => $page > 1,
+        'hasNext' => $page < $totalPages,
+    ];
+}
+
+function fetchPaginated(PDO $pdo, string $baseSql, array $params = [], int $page = 1, int $perPage = 10, ?string $countSql = null): array {
+    if ($countSql === null) {
+        $countSql = preg_replace('/SELECT\b.*?\bFROM\b/si', 'SELECT COUNT(*) FROM', $baseSql, 1);
+        if ($countSql === null) { $countSql = $baseSql; }
+    }
+    $countStmt = $pdo->prepare($countSql);
+    $countStmt->execute($params);
+    $total = (int) $countStmt->fetchColumn();
+    $p = paginate($total, $page, $perPage);
+    $stmt = $pdo->prepare($baseSql . ' LIMIT ? OFFSET ?');
+    $stmt->execute([...$params, $p['perPage'], $p['offset']]);
+    return ['list' => $stmt->fetchAll(), 'p' => $p];
+}
+
+function paginationUrl(int $page): string {
+    $url = $_SERVER['REQUEST_URI'];
+    $parsed = parse_url($url);
+    $query = [];
+    if (!empty($parsed['query'])) { parse_str($parsed['query'], $query); }
+    $query['page'] = $page;
+    $base = ($parsed['path'] ?? '');
+    return $base . '?' . http_build_query($query);
+}
+
+function renderPagination(array $p): string {
+    $page = $p['page'];
+    $totalPages = $p['totalPages'];
+
+    $start = max(1, $page - 2);
+    $end = min($totalPages, $page + 2);
+    if ($end - $start < 4) { $end = min($totalPages, $start + 4); }
+    if ($end - $start < 4) { $start = max(1, $end - 4); }
+
+    $html = '<nav class="flex items-center justify-between px-4 py-3" aria-label="Pagination">';
+    $html .= '<div class="hidden sm:flex items-center gap-1">';
+    $html .= '<span class="text-sm text-on-surface-variant">Halaman <strong class="text-on-surface">' . $page . '</strong> dari ' . $totalPages . '</span>';
+    $html .= '</div>';
+    $html .= '<div class="flex items-center gap-1.5">';
+
+    $prevClass = 'px-3 py-1.5 rounded-md text-sm font-medium border border-outline-variant transition-colors ' . ($p['hasPrev'] ? 'text-on-surface hover:bg-surface-low' : 'text-on-surface-variant opacity-50 cursor-not-allowed');
+    if ($p['hasPrev']) {
+        $html .= '<a href="' . e(paginationUrl($page - 1)) . '" class="' . $prevClass . '"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg></a>';
+    } else {
+        $html .= '<span class="' . $prevClass . '"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg></span>';
+    }
+
+    for ($i = $start; $i <= $end; $i++) {
+        $isActive = $i === $page;
+        $cls = 'w-9 h-9 flex items-center justify-center rounded-md text-sm font-medium transition-colors ' . ($isActive ? 'bg-primary text-white' : 'text-on-surface hover:bg-surface-low border border-outline-variant');
+        if ($isActive) {
+            $html .= '<span class="' . $cls . '">' . $i . '</span>';
+        } else {
+            $html .= '<a href="' . e(paginationUrl($i)) . '" class="' . $cls . '">' . $i . '</a>';
+        }
+    }
+
+    $nextClass = 'px-3 py-1.5 rounded-md text-sm font-medium border border-outline-variant transition-colors ' . ($p['hasNext'] ? 'text-on-surface hover:bg-surface-low' : 'text-on-surface-variant opacity-50 cursor-not-allowed');
+    if ($p['hasNext']) {
+        $html .= '<a href="' . e(paginationUrl($page + 1)) . '" class="' . $nextClass . '"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></a>';
+    } else {
+        $html .= '<span class="' . $nextClass . '"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></span>';
+    }
+
+    $html .= '</div></nav>';
+    return $html;
+}

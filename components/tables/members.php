@@ -22,3 +22,6 @@ foreach ($list as $row):
 </tr>
 <?php endforeach; ?>
 <?php if (empty($list)): ?><tr><td colspan="<?= $can_manage?5:4 ?>" class="text-center text-on-surface-variant py-8">Belum ada member</td></tr><?php endif; ?>
+<?php if (!empty($list)): ?>
+<tr><td colspan="<?= $can_manage?5:4 ?>" class="bg-white border-t border-outline-variant"><?= renderPagination($p) ?></td></tr>
+<?php endif; ?>

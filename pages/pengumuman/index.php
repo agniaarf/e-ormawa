@@ -78,6 +78,9 @@ if (isset($_GET['delete'])) {
 
 // Listing
 $search = trim($_GET['search'] ?? '');
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
+
 if (is_super_admin()) {
     $sql = "SELECT p.*, o.nama AS org_nama FROM pengumuman p LEFT JOIN organisasi o ON p.organisasi_id=o.id WHERE 1=1";
     $params = [];
@@ -87,7 +90,9 @@ if (is_super_admin()) {
 }
 if ($search !== '') { $sql .= " AND p.judul LIKE ?"; $params[] = "%$search%"; }
 $sql .= " ORDER BY p.created_at DESC";
-$stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+$result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+$list = $result['list'];
+$p = $result['p'];
 
 if (($_GET['ajax'] ?? '') === 'table') {
     include __DIR__ . '/../../components/tables/pengumuman.php';

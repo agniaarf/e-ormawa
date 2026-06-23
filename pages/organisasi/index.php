@@ -102,23 +102,30 @@ if (isset($_GET['restore'])) {
 // ---------- Data ----------
 $search = trim($_GET['search'] ?? '');
 $show_arsip = is_super_admin() && isset($_GET['arsip']);
+$pageNum = max(1, (int) ($_GET['page'] ?? 1));
+$perPage = 10;
 
 $users = $pdo->query("SELECT id, nama, nim FROM users WHERE status='aktif' AND deleted_at IS NULL AND role_id=3 ORDER BY nama")->fetchAll();
 
 if (is_super_admin()) {
     $sql = "SELECT o.*, (SELECT u.id FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=o.id AND uo.role='leader' AND uo.status='aktif' LIMIT 1) AS leader_id, (SELECT u.nama FROM user_organisasi uo JOIN users u ON uo.user_id=u.id WHERE uo.organisasi_id=o.id AND uo.role='leader' AND uo.status='aktif' LIMIT 1) AS leader_nama
             FROM organisasi o WHERE o.deleted_at IS " . ($show_arsip ? 'NOT NULL' : 'NULL');
+    $countSql = "SELECT COUNT(*) FROM organisasi o WHERE o.deleted_at IS " . ($show_arsip ? 'NOT NULL' : 'NULL');
     $params = [];
-    if ($search !== '') { $sql .= " AND (o.nama LIKE ? OR o.singkatan LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
+    if ($search !== '') { $sql .= " AND (o.nama LIKE ? OR o.singkatan LIKE ?)"; $countSql .= " AND (o.nama LIKE ? OR o.singkatan LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
     $sql .= " ORDER BY o.created_at DESC";
-    $stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+    $result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage, $countSql);
+    $list = $result['list'];
+    $p = $result['p'];
 } else {
     // Mahasiswa browse
     $sql = "SELECT o.* FROM organisasi o WHERE o.status='aktif' AND o.deleted_at IS NULL";
     $params = [];
     if ($search !== '') { $sql .= " AND (o.nama LIKE ? OR o.singkatan LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; }
     $sql .= " ORDER BY o.nama";
-    $stmt = $pdo->prepare($sql); $stmt->execute($params); $list = $stmt->fetchAll();
+    $result = fetchPaginated($pdo, $sql, $params, $pageNum, $perPage);
+    $list = $result['list'];
+    $p = $result['p'];
 
     // membership + pending status maps
     $mine = $pdo->prepare("SELECT organisasi_id, role FROM user_organisasi WHERE user_id=? AND status='aktif'");
@@ -128,7 +135,7 @@ if (is_super_admin()) {
     $pend = $pdo->prepare("SELECT organisasi_id, status FROM permintaan_bergabung WHERE user_id=? AND status IN ('menunggu','administrasi','wawancara')");
     $pend->execute([$user_id]);
     $my_pending = [];
-    foreach ($pend->fetchAll() as $p) { $my_pending[(int)$p['organisasi_id']] = $p['status']; }
+    foreach ($pend->fetchAll() as $row) { $my_pending[(int)$row['organisasi_id']] = $row['status']; }
 }
 
 // AJAX partial for Super Admin table
@@ -215,6 +222,7 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
             <?php endforeach; ?>
             <?php if (empty($list)): ?><div class="col-span-full text-center text-on-surface-variant py-12">Belum ada organisasi tersedia.</div><?php endif; ?>
         </div>
+        <?php if (!empty($list)): ?><div class="mt-2"><?= renderPagination($p) ?></div><?php endif; ?>
     <?php endif; ?>
     </div>
 </main>
