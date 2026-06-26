@@ -76,10 +76,8 @@ if ($role === 'Super Admin') {
 <aside id="sidebar" class="fixed top-0 left-0 z-40 w-[280px] h-screen transition-transform -translate-x-full lg:translate-x-0 bg-primary-light">
     <div class="h-full flex flex-col">
         <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
-            <div class="w-9 h-9 rounded-lg bg-accent flex items-center justify-center">
-                <span class="text-primary font-extrabold text-sm">EO</span>
-            </div>
-            <span class="text-white font-bold text-lg tracking-tight">E-ORMAWA</span>
+            <img src="<?= BASE_URL ?>/assets/images/orbita-logo.png" alt="ORBITA Logo" class="h-9 w-auto">
+            <span class="text-white font-bold text-lg tracking-tight">ORBITA</span>
         </div>
         <nav class="flex-1 overflow-y-auto py-4 space-y-1">
             <?= makeMenu($menus) ?>

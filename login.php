@@ -42,10 +42,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="w-full max-w-md p-8">
     <div class="bg-white rounded-2xl border border-outline-variant shadow-card p-8">
         <div class="flex items-center gap-3 justify-center mb-8">
-            <div class="w-10 h-10 rounded-lg bg-primary-light flex items-center justify-center">
-                <span class="text-accent font-extrabold text-lg">EO</span>
-            </div>
-            <span class="text-2xl font-extrabold text-primary tracking-tight">E-ORMAWA</span>
+            <img src="<?= BASE_URL ?>/assets/images/orbita-logo.png" alt="ORBITA Logo" class="h-10 w-auto">
+            <span class="text-2xl font-extrabold text-primary tracking-tight">ORBITA</span>
         </div>
         <h2 class="text-xl font-bold text-on-surface mb-1">Selamat Datang</h2>
         <p class="text-sm text-on-surface-variant mb-6">Masuk ke akun Anda untuk melanjutkan</p>

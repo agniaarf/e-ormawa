@@ -30,7 +30,7 @@ define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
 // App settings
-define('APP_NAME', 'E-ORMAWA');
+define('APP_NAME', 'ORBITA');
 define('APP_VERSION', '1.0.0');
 
 // Security
