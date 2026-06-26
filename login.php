@@ -63,13 +63,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="block text-sm font-semibold text-on-surface mb-1.5">Password</label>
                 <input type="password" name="password" required class="form-input" placeholder="Masukkan password">
             </div>
-            <div class="flex items-center justify-between">
-                <label class="flex items-center gap-2 text-sm text-on-surface-variant cursor-pointer">
-                    <input type="checkbox" name="remember" class="w-4 h-4 rounded border-outline text-primary focus:ring-primary">
-                    Ingat saya
-                </label>
-                <a href="<?= BASE_URL ?>/forgot-password.php" class="text-sm font-medium text-primary hover:underline">Lupa Password?</a>
-            </div>
             <button type="submit" class="btn-primary w-full">Masuk</button>
         </form>
         <p class="mt-6 text-center text-sm text-on-surface-variant">

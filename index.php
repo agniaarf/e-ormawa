@@ -24,6 +24,7 @@ $segments = ($path === '/') ? [] : explode('/', trim($path, '/'));
 $routes = [
     ''                                       => 'dashboard.php',
     'dashboard'                              => 'dashboard.php',
+    'kegiatan'                               => 'kegiatan/index.php',
     'organisasi'                             => 'organisasi/index.php',
     'organisasi/{org}'                       => 'organisasi/detail.php',
     'organisasi/{org}/member'                => 'organisasi/members.php',

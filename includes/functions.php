@@ -161,7 +161,7 @@ function my_organisasi(int $user_id): array {
         "SELECT o.*, uo.role AS my_role
          FROM user_organisasi uo
          JOIN organisasi o ON uo.organisasi_id = o.id
-         WHERE uo.user_id = ? AND uo.status = 'aktif' AND o.deleted_at IS NULL
+         WHERE uo.user_id = ? AND uo.status = 'aktif'
          ORDER BY o.nama"
     );
     $stmt->execute([$user_id]);
