@@ -23,26 +23,42 @@ $role_label = org_role_label($membership['role']);
 $joined = $membership['created_at'] ? date('d M Y', strtotime($membership['created_at'])) : '-';
 ?>
 <?php require __DIR__ . '/../../components/head.php'; ?>
+<style>
+@media print {
+    @page { margin: 20mm; }
+    #sidebar, #sidebar-overlay, header, .no-print { display: none; }
+    main { margin: 0; padding: 20px; margin-left: 0; }
+    .max-w-3xl { max-width: 100%; }
+    .member-card { border: 2px solid #244539; max-width: 450px; margin: 0 auto; }
+    .member-card-header, .member-card-footer { background: #244539; color: white; }
+}
+</style>
 <?php require __DIR__ . '/../../components/sidebar.php'; ?>
 <?php require __DIR__ . '/../../components/navbar.php'; ?>
 
 <main class="p-6 lg:ml-[280px]">
     <div class="max-w-3xl mx-auto space-y-6">
-        <a href="<?= url('organisasi/' . $org_id) ?>" class="inline-flex items-center gap-1 text-sm text-primary font-semibold hover:underline">
+        <a href="<?= url('organisasi/' . $org_id) ?>" class="inline-flex items-center gap-1 text-sm text-primary font-semibold hover:underline no-print">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
             <?= e($org['nama']) ?>
         </a>
 
-        <div class="bg-white rounded-2xl border border-outline-variant shadow-card p-6 space-y-6">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-card p-6 space-y-6 no-print-container">
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-on-surface">Kartu Anggota</h3>
-                <button onclick="window.print()" class="btn-secondary !h-9 !px-4 !text-sm no-print">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m-6.06-3.71c.24.03.48.062.72.096m-.72-.096L11.34 18M3 12v6.75A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V12M3 12h18M3 12a9 9 0 0118 0"/></svg>
-                    Cetak
-                </button>
+                <div class="flex items-center gap-2 no-print">
+                    <button onclick="downloadAsImage()" class="btn-secondary !h-9 !px-4 !text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
+                        Foto
+                    </button>
+                    <button onclick="downloadAsPDF()" class="btn-secondary !h-9 !px-4 !text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                        PDF
+                    </button>
+                </div>
             </div>
 
-            <div class="member-card">
+            <div id="memberCard" class="member-card">
                 <div class="member-card-header">
                     <?php if ($org['logo']): ?>
                         <img src="<?= url($org['logo']) ?>" alt="" class="w-12 h-12 object-contain rounded-lg bg-white">
@@ -96,5 +112,40 @@ $joined = $membership['created_at'] ? date('d M Y', strtotime($membership['creat
         </div>
     </div>
 </main>
+
+<script>
+function downloadAsImage() {
+    const card = document.getElementById('memberCard');
+    html2canvas(card, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true
+    }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'kartu-anggota-<?= e($org['singkatan'] ?: 'org') ?>-<?= e($membership['nim']) ?>.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+
+function downloadAsPDF() {
+    const card = document.getElementById('memberCard');
+    html2canvas(card, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true
+    }).then(canvas => {
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const imgWidth = 85;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        const x = (210 - imgWidth) / 2;
+        const y = 20;
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+        pdf.save('kartu-anggota-<?= e($org['singkatan'] ?: 'org') ?>-<?= e($membership['nim']) ?>.pdf');
+    });
+}
+</script>
 
 <?php require __DIR__ . '/../../components/footer.php'; ?>

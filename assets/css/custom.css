@@ -12,7 +12,7 @@
 .org-section-chevron { transition: transform 0.3s ease; }
 .org-section-chevron.collapsed { transform: rotate(-90deg); }
 
-.member-card { border-radius: 1rem; overflow: hidden; border: 1px solid #c1c8c3; box-shadow: 0 4px 20px rgba(59, 93, 80, 0.08); }
+.member-card { border-radius: 1rem; overflow: hidden; border: 1px solid #c1c8c3; box-shadow: 0 4px 20px rgba(59, 93, 80, 0.08); max-width: 450px; margin: 0 auto; }
 
 .animate-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both, pulseBadge 1.5s ease-in-out infinite; }
 @keyframes popIn {
@@ -24,15 +24,17 @@
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(186, 26, 26, 0.5); }
     50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(186, 26, 26, 0); }
 }
-.member-card-header { background: #244539; padding: 1.25rem; display: flex; align-items: center; gap: 0.75rem; }
-.member-card-body { background: white; padding: 1.5rem; }
-.member-card-footer { background: #244539; padding: 0.75rem 1.25rem; text-align: center; }
+.member-card-header { background: linear-gradient(135deg, #244539 0%, #3B5D50 100%); padding: 1.5rem; display: flex; align-items: center; gap: 1rem; }
+.member-card-body { background: white; padding: 2rem; }
+.member-card-footer { background: linear-gradient(135deg, #244539 0%, #3B5D50 100%); padding: 1rem 1.5rem; text-align: center; }
 
 @media print {
-    body { background: white; }
-    .no-print, #sidebar, #sidebar-overlay, nav, #navbar, .lg\:ml-\[280px\] { display: none !important; }
-    main { margin-left: 0 !important; padding: 0 !important; }
-    .member-card { box-shadow: none; border: 1px solid #000; break-inside: avoid; max-width: 500px; margin: 0 auto; }
+    @page { margin: 20mm; size: A4 portrait; }
+    #sidebar, #sidebar-overlay, header, .no-print { display: none; }
+    main { margin: 0; padding: 20px; margin-left: 0; }
+    .max-w-3xl { max-width: 100%; }
+    .member-card { box-shadow: none; border: 2px solid #244539; max-width: 450px; margin: 0 auto; page-break-inside: avoid; }
+    .member-card-header, .member-card-footer { background: #244539; color: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
 .card-hover { transition: box-shadow 0.2s ease, transform 0.2s ease; }
