@@ -81,7 +81,7 @@ http://localhost/e-ormawa
 
 ## 👥 Akun Dummy
 
-Password untuk semua akun: **password123**
+Password untuk semua akun: **password**
 
 ### Super Admin
 - Email: `admin@eormawa.test` (NIM: 0000000000)
