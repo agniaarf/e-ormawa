@@ -49,7 +49,6 @@ if ($role === 'Super Admin') {
     $menus = [
         ['page'=>'dashboard','label'=>'Dashboard','url'=>url('dashboard'),'icon'=>$icn['dashboard'],'active'=>$current==='dashboard'],
         ['page'=>'organisasi','label'=>'Jelajah Organisasi','url'=>url('organisasi'),'icon'=>$icn['org'],'active'=>$current==='organisasi'],
-        ['page'=>'profil','label'=>'Profil','url'=>url('profil'),'icon'=>$icn['profile'],'active'=>$current==='profil'],
         ['page'=>'notifikasi','label'=>'Notifikasi','url'=>url('notifikasi'),'icon'=>$icn['bell'],'active'=>$current==='notifikasi'],
     ];
     // Build per-organisation submenus based on the user's org role
