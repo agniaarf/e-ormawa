@@ -13,7 +13,7 @@ USE e_ormawa;
 DROP TABLE IF EXISTS roles;
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nama VARCHAR(50) NOT NULL UNIQUE, -- Super Admin, Admin Organisasi, Mahasiswa
+    nama VARCHAR(50) NOT NULL UNIQUE, -- Super Admin, Mahasiswa
     deskripsi VARCHAR(255),
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -343,5 +343,5 @@ INSERT INTO activity_log (user_id, aksi, detail, ip_address, user_agent) VALUES
 INSERT INTO pendaftaran_organisasi (user_id, organisasi_id, motivasi, status) VALUES
 (9, 1, 'Saya ingin mengembangkan skill pemrograman dan berkontribusi dalam kegiatan HIMATIF.', 'diterima'),
 (10, 1, 'Tertarik dengan dunia teknologi dan ingin belajar lebih banyak.', 'menunggu'),
-(13, 4, 'Penggemar pemrograman dan ingin bergabung dengan komunitas developer.', 'diterima'),
-(14, 5, 'Hobi bermain basket dan ingin mengembangkan skill olahraga.', 'menunggu');
+(11, 4, 'Penggemar pemrograman dan ingin bergabung dengan komunitas developer.', 'diterima'),
+(12, 5, 'Hobi bermain basket dan ingin mengembangkan skill olahraga.', 'menunggu');

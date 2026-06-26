@@ -9,23 +9,23 @@ $pdo = db();
 $user_id = (int) $_SESSION['user_id'];
 
 if (is_super_admin()) {
-    $total_organisasi = $pdo->query("SELECT COUNT(*) FROM organisasi WHERE status='aktif' AND deleted_at IS NULL")->fetchColumn();
-    $total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE status='aktif' AND deleted_at IS NULL")->fetchColumn();
-    $total_mahasiswa = $pdo->query("SELECT COUNT(*) FROM users WHERE role_id=3 AND status='aktif' AND deleted_at IS NULL")->fetchColumn();
-    $total_kegiatan = $pdo->query("SELECT COUNT(*) FROM kegiatan WHERE status='berlangsung' AND deleted_at IS NULL")->fetchColumn();
+    $total_organisasi = $pdo->query("SELECT COUNT(*) FROM organisasi WHERE status='aktif'")->fetchColumn();
+    $total_users = $pdo->query("SELECT COUNT(*) FROM users WHERE status='aktif'")->fetchColumn();
+    $total_mahasiswa = $pdo->query("SELECT COUNT(*) FROM users WHERE role_id=2 AND status='aktif'")->fetchColumn();
+    $total_kegiatan = $pdo->query("SELECT COUNT(*) FROM kegiatan WHERE status='berlangsung'")->fetchColumn();
     $total_pendaftaran = $pdo->query("SELECT COUNT(*) FROM pendaftaran_organisasi WHERE status='menunggu'")->fetchColumn();
     $total_pengumuman = $pdo->query("SELECT COUNT(*) FROM pengumuman")->fetchColumn();
-    $total_kegiatan_selesai = $pdo->query("SELECT COUNT(*) FROM kegiatan WHERE status='selesai' AND deleted_at IS NULL")->fetchColumn();
-    $recent_organisasi = $pdo->query("SELECT * FROM organisasi WHERE status='aktif' AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 5")->fetchAll();
-    $kegiatan_by_type = $pdo->query("SELECT tipe, COUNT(*) as total FROM kegiatan WHERE deleted_at IS NULL GROUP BY tipe")->fetchAll();
+    $total_kegiatan_selesai = $pdo->query("SELECT COUNT(*) FROM kegiatan WHERE status='selesai'")->fetchColumn();
+    $recent_organisasi = $pdo->query("SELECT * FROM organisasi WHERE status='aktif' ORDER BY created_at DESC LIMIT 5")->fetchAll();
+    $kegiatan_by_type = $pdo->query("SELECT tipe, COUNT(*) as total FROM kegiatan GROUP BY tipe")->fetchAll();
     $recent_pendaftaran = $pdo->query("SELECT po.*, u.nama as user_nama, o.nama as org_nama FROM pendaftaran_organisasi po JOIN users u ON po.user_id = u.id JOIN organisasi o ON po.organisasi_id = o.id WHERE po.status='menunggu' ORDER BY po.created_at DESC LIMIT 5")->fetchAll();
-    $kegiatan_by_status = $pdo->query("SELECT status, COUNT(*) as total FROM kegiatan WHERE deleted_at IS NULL GROUP BY status")->fetchAll();
-    $top_organisasi = $pdo->query("SELECT o.*, COUNT(k.id) as kegiatan_count FROM organisasi o LEFT JOIN kegiatan k ON o.id = k.organisasi_id AND k.deleted_at IS NULL WHERE o.status='aktif' AND o.deleted_at IS NULL GROUP BY o.id ORDER BY kegiatan_count DESC LIMIT 5")->fetchAll();
-    $recent_kegiatan = $pdo->query("SELECT k.*, o.nama as org_nama FROM kegiatan k JOIN organisasi o ON k.organisasi_id = o.id WHERE k.deleted_at IS NULL ORDER BY k.created_at DESC LIMIT 5")->fetchAll();
+    $kegiatan_by_status = $pdo->query("SELECT status, COUNT(*) as total FROM kegiatan GROUP BY status")->fetchAll();
+    $top_organisasi = $pdo->query("SELECT o.*, COUNT(k.id) as kegiatan_count FROM organisasi o LEFT JOIN kegiatan k ON o.id = k.organisasi_id WHERE o.status='aktif' GROUP BY o.id ORDER BY kegiatan_count DESC LIMIT 5")->fetchAll();
+    $recent_kegiatan = $pdo->query("SELECT k.*, o.nama as org_nama FROM kegiatan k JOIN organisasi o ON k.organisasi_id = o.id ORDER BY k.created_at DESC LIMIT 5")->fetchAll();
     $pendaftaran_by_status = $pdo->query("SELECT status, COUNT(*) as total FROM pendaftaran_organisasi GROUP BY status")->fetchAll();
 } else {
     $orgs = my_organisasi($user_id);
-    $total_organisasi = $pdo->query("SELECT COUNT(*) FROM organisasi WHERE status='aktif' AND deleted_at IS NULL")->fetchColumn();
+    $total_organisasi = $pdo->query("SELECT COUNT(*) FROM organisasi WHERE status='aktif'")->fetchColumn();
     $my_org_count = count($orgs);
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM permintaan_bergabung WHERE user_id=? AND status IN ('menunggu','administrasi','wawancara')");
     $stmt->execute([$user_id]); $pending_req = $stmt->fetchColumn();
