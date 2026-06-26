@@ -90,20 +90,22 @@ Password untuk semua akun: **password123**
 ### Mahasiswa
 Sub-role (leader/staff/member) ditentukan di tabel `anggota` berdasarkan organisasi yang diikuti.
 
-**Mahasiswa dengan role Leader:**
+**Mahasiswa dengan role Ketua (Leader):**
 - Email: `budi@eormawa.test` (NIM: 2021001001) - Ketua HIMATIF
 - Email: `siti@eormawa.test` (NIM: 2021001002) - Ketua UKM Tari
 - Email: `ahmad@eormawa.test` (NIM: 2021001003) - Ketua HIMMA
-- Email: `dewi@eormawa.test` (NIM: 2022001001) - Ketua CODEX
-- Email: `dimas@eormawa.test` (NIM: 2023001001) - Ketua CODEX
-- Email: `bayu@eormawa.test` (NIM: 2023001003) - Ketua UKM Basket
+- Email: `dewi@eormawa.test` (NIM: 2022001001) - Staff HIMATIF, Ketua CODEX, Ketua UKM Basket
 
-**Mahasiswa dengan role Staff/Member:**
-- Email: `rizky@eormawa.test` (NIM: 2022001002) - Staff HIMATIF & CODEX
-- Email: `maya@eormawa.test` (NIM: 2022001003) - Staff HIMATIF
-- Email: `fajar@eormawa.test` (NIM: 2022001004) - Staff HIMATIF & UKM Basket
-- Email: `lina@eormawa.test` (NIM: 2022001005) - Staff UKM Tari
+**Mahasiswa dengan role Staff:**
+- Email: `rizky@eormawa.test` (NIM: 2022001002) - Anggota HIMATIF, Staff CODEX, Staff UKM Basket
+- Email: `maya@eormawa.test` (NIM: 2022001003) - Staff HIMATIF, Staff UKM Basket
+- Email: `lina@eormawa.test` (NIM: 2022001005) - Staff HIMATIF, Staff UKM Basket
 - Email: `citra@eormawa.test` (NIM: 2023001002) - Staff HIMMA
+
+**Mahasiswa dengan role Anggota (Member):**
+- Email: `fajar@eormawa.test` (NIM: 2022001004) - Anggota HIMATIF
+- Email: `dimas@eormawa.test` (NIM: 2023001001) - Anggota CODEX, Anggota UKM Basket
+- Email: `bayu@eormawa.test` (NIM: 2023001003) - Anggota HIMMA, Anggota UKM Basket
 
 ## 📖 Panduan Penggunaan
 
