@@ -284,6 +284,61 @@ if (is_super_admin() && ($_GET['ajax'] ?? '') === 'table') {
     </div>
 </div>
 
+<div id="modalDetail" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+    <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('modalDetail')"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl border border-outline-variant shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+                <h3 class="font-bold text-on-surface text-lg">Detail Organisasi</h3>
+                <button type="button" onclick="closeModal('modalDetail')" class="p-1.5 rounded-lg hover:bg-surface-low text-on-surface-variant">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface-variant mb-1">Nama</label>
+                        <p class="text-sm font-medium text-on-surface" id="detailNama"></p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface-variant mb-1">Singkatan</label>
+                        <p class="text-sm text-on-surface" id="detailSingkatan"></p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface-variant mb-1">Leader</label>
+                        <p class="text-sm text-on-surface" id="detailLeader"></p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-on-surface-variant mb-1">Status</label>
+                        <span id="detailStatus" class="badge"></span>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-on-surface-variant mb-1">Dibuat</label>
+                    <p class="text-sm text-on-surface" id="detailCreated"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-on-surface-variant mb-1">Deskripsi</label>
+                    <p class="text-sm text-on-surface whitespace-pre-wrap" id="detailDeskripsi"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-on-surface-variant mb-1">Visi</label>
+                    <p class="text-sm text-on-surface whitespace-pre-wrap" id="detailVisi"></p>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-on-surface-variant mb-1">Misi</label>
+                    <p class="text-sm text-on-surface whitespace-pre-wrap" id="detailMisi"></p>
+                </div>
+                <div class="flex justify-end pt-4">
+                    <button type="button" onclick="closeModal('modalDetail')" class="px-4 py-2 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-medium hover:bg-surface-low">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 const users = <?= json_encode($users) ?>;
 function buildOrgLeader(selected) {
@@ -310,6 +365,18 @@ function openOrganisasiModal(row) {
     document.getElementById('orgMisi').value = isEdit ? row.misi : '';
     buildOrgLeader(isEdit ? row.leader_id : '');
     openModal('modalOrganisasi');
+}
+function openDetailModal(row) {
+    document.getElementById('detailNama').textContent = row.nama;
+    document.getElementById('detailSingkatan').textContent = row.singkatan || '-';
+    document.getElementById('detailLeader').textContent = row.leader_nama || '-';
+    document.getElementById('detailStatus').textContent = row.status;
+    document.getElementById('detailStatus').className = 'badge ' + (row.status === 'aktif' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600');
+    document.getElementById('detailDeskripsi').textContent = row.deskripsi || 'Tidak ada deskripsi.';
+    document.getElementById('detailVisi').textContent = row.visi || 'Tidak ada visi.';
+    document.getElementById('detailMisi').textContent = row.misi || 'Tidak ada misi.';
+    document.getElementById('detailCreated').textContent = new Date(row.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    openModal('modalDetail');
 }
 </script>
 
