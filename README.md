@@ -15,7 +15,7 @@ Sistem manajemen organisasi mahasiswa berbasis web untuk mempermudah pengelolaan
 ### Untuk Mahasiswa
 - **Dashboard** - Informasi organisasi yang diikuti dan notifikasi
 - **Jelajah Organisasi** - Melihat dan bergabung dengan organisasi
-- **Manajemen Organisasi** (per role):
+- **Manajemen Organisasi** (sub-role ditentukan per organisasi di tabel anggota):
   - **Leader**: Kelola organisasi, manajemen member, manajemen kegiatan
   - **Staff**: Manajemen member, manajemen kegiatan
   - **Member**: Lihat member, lihat kegiatan
@@ -58,8 +58,7 @@ Buka phpMyAdmin (http://localhost/phpmyadmin) dan:
    - File ini sudah termasuk schema dan dummy data
    - Data yang akan dibuat:
      - 2 Super Admin
-     - 3 Admin Organisasi
-     - 8 Mahasiswa
+     - 11 Mahasiswa (dengan sub-role leader/staff/member di tabel anggota)
      - 5 Organisasi
      - 11 Kegiatan
      - Pengumuman, Notifikasi, Activity Log
@@ -88,20 +87,23 @@ Password untuk semua akun: **password123**
 - Email: `admin@eormawa.test` (NIM: 0000000000)
 - Email: `superadmin@eormawa.test` (NIM: 0000000001)
 
-### Admin Organisasi
+### Mahasiswa
+Sub-role (leader/staff/member) ditentukan di tabel `anggota` berdasarkan organisasi yang diikuti.
+
+**Mahasiswa dengan role Leader:**
 - Email: `budi@eormawa.test` (NIM: 2021001001) - Ketua HIMATIF
 - Email: `siti@eormawa.test` (NIM: 2021001002) - Ketua UKM Tari
 - Email: `ahmad@eormawa.test` (NIM: 2021001003) - Ketua HIMMA
-
-### Mahasiswa
-- Email: `dewi@eormawa.test` (NIM: 2022001001) - Anggota HIMATIF & CODEX
-- Email: `rizky@eormawa.test` (NIM: 2022001002) - Anggota HIMATIF & CODEX
-- Email: `maya@eormawa.test` (NIM: 2022001003) - Anggota HIMATIF
-- Email: `fajar@eormawa.test` (NIM: 2022001004) - Anggota HIMATIF & UKM Basket
-- Email: `lina@eormawa.test` (NIM: 2022001005) - Anggota UKM Tari
+- Email: `dewi@eormawa.test` (NIM: 2022001001) - Ketua CODEX
 - Email: `dimas@eormawa.test` (NIM: 2023001001) - Ketua CODEX
-- Email: `citra@eormawa.test` (NIM: 2023001002) - Anggota HIMMA
 - Email: `bayu@eormawa.test` (NIM: 2023001003) - Ketua UKM Basket
+
+**Mahasiswa dengan role Staff/Member:**
+- Email: `rizky@eormawa.test` (NIM: 2022001002) - Staff HIMATIF & CODEX
+- Email: `maya@eormawa.test` (NIM: 2022001003) - Staff HIMATIF
+- Email: `fajar@eormawa.test` (NIM: 2022001004) - Staff HIMATIF & UKM Basket
+- Email: `lina@eormawa.test` (NIM: 2022001005) - Staff UKM Tari
+- Email: `citra@eormawa.test` (NIM: 2023001002) - Staff HIMMA
 
 ## 📖 Panduan Penggunaan
 
@@ -152,7 +154,9 @@ Password untuk semua akun: **password123**
 - **Gabung**: Klik "Gabung Organisasi" untuk mendaftar
 - **Status**: Menunggu, Wawancara, Diterima, Ditolak
 
-#### Manajemen Organisasi (per role)
+#### Manajemen Organisasi (sub-role per organisasi)
+
+Sub-role (Leader/Staff/Member) ditentukan di tabel `anggota` berdasarkan posisi dalam organisasi.
 
 **Leader:**
 - **Kelola Organisasi**: Edit info organisasi, visi, misi

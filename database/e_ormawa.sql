@@ -20,8 +20,7 @@ CREATE TABLE roles (
 
 INSERT INTO roles (id, nama, deskripsi) VALUES
 (1, 'Super Admin', 'Mengelola seluruh sistem'),
-(2, 'Admin Organisasi', 'Mengelola organisasi tertentu'),
-(3, 'Mahasiswa', 'Pengguna umum mahasiswa');
+(2, 'Mahasiswa', 'Pengguna umum mahasiswa (sub-role: leader, staff, member)');
 
 -- =====================================================
 -- 2. users
@@ -33,7 +32,7 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     nim VARCHAR(20) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role_id INT NOT NULL DEFAULT 3,
+    role_id INT NOT NULL DEFAULT 2,
     no_hp VARCHAR(20),
     jurusan VARCHAR(100),
     angkatan VARCHAR(4),
@@ -231,7 +230,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO users (nama, email, nim, password, role_id, no_hp, jurusan, angkatan, status) VALUES
 ('Admin Utama', 'superadmin@eormawa.test', '0000000001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 1, '081234567890', 'Teknik Informatika', '2020', 'aktif');
 
--- Admin Organisasi
+-- Mahasiswa with Leader role (defined in anggota table)
 INSERT INTO users (nama, email, nim, password, role_id, no_hp, jurusan, angkatan, status) VALUES
 ('Budi Santoso', 'budi@eormawa.test', '2021001001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567891', 'Manajemen', '2021', 'aktif'),
 ('Siti Rahayu', 'siti@eormawa.test', '2021001002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567892', 'Akuntansi', '2021', 'aktif'),
@@ -239,14 +238,14 @@ INSERT INTO users (nama, email, nim, password, role_id, no_hp, jurusan, angkatan
 
 -- Mahasiswa (Regular Members)
 INSERT INTO users (nama, email, nim, password, role_id, no_hp, jurusan, angkatan, status) VALUES
-('Dewi Lestari', 'dewi@eormawa.test', '2022001001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567894', 'Teknik Informatika', '2022', 'aktif'),
-('Rizky Pratama', 'rizky@eormawa.test', '2022001002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567895', 'Sistem Informasi', '2022', 'aktif'),
-('Maya Sari', 'maya@eormawa.test', '2022001003', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567896', 'Desain Komunikasi Visual', '2022', 'aktif'),
-('Fajar Nugraha', 'fajar@eormawa.test', '2022001004', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567897', 'Teknik Elektro', '2022', 'aktif'),
-('Lina Permata', 'lina@eormawa.test', '2022001005', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567898', 'Psikologi', '2022', 'aktif'),
-('Dimas Anggara', 'dimas@eormawa.test', '2023001001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567899', 'Teknik Mesin', '2023', 'aktif'),
-('Citra Kirana', 'citra@eormawa.test', '2023001002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567900', 'Farmasi', '2023', 'aktif'),
-('Bayu Saputra', 'bayu@eormawa.test', '2023001003', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 3, '081234567901', 'Hukum', '2023', 'aktif');
+('Dewi Lestari', 'dewi@eormawa.test', '2022001001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567894', 'Teknik Informatika', '2022', 'aktif'),
+('Rizky Pratama', 'rizky@eormawa.test', '2022001002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567895', 'Sistem Informasi', '2022', 'aktif'),
+('Maya Sari', 'maya@eormawa.test', '2022001003', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567896', 'Desain Komunikasi Visual', '2022', 'aktif'),
+('Fajar Nugraha', 'fajar@eormawa.test', '2022001004', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567897', 'Teknik Elektro', '2022', 'aktif'),
+('Lina Permata', 'lina@eormawa.test', '2022001005', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567898', 'Psikologi', '2022', 'aktif'),
+('Dimas Anggara', 'dimas@eormawa.test', '2023001001', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567899', 'Teknik Mesin', '2023', 'aktif'),
+('Citra Kirana', 'citra@eormawa.test', '2023001002', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567900', 'Farmasi', '2023', 'aktif'),
+('Bayu Saputra', 'bayu@eormawa.test', '2023001003', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 2, '081234567901', 'Hukum', '2023', 'aktif');
 
 -- Organizations
 INSERT INTO organisasi (nama, singkatan, deskripsi, visi, misi, ketua_id, status) VALUES
