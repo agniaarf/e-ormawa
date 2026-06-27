@@ -1,11 +1,11 @@
--- E-ORMAWA Database Schema
+-- ORBITA Database Schema
 -- Versi: 1.0.0
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
-CREATE DATABASE IF NOT EXISTS e_ormawa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE e_ormawa;
+CREATE DATABASE IF NOT EXISTS orbita CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE orbita;
 
 -- =====================================================
 -- 1. roles
@@ -49,37 +49,37 @@ CREATE TABLE users (
 
 -- Default Super Admin (password: admin123)
 INSERT INTO users (nama, email, nim, password, role_id, status) VALUES
-('Super Admin', 'admin@eormawa.test', '0000000000', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif');
+('Super Admin', 'admin@orbita.test', '0000000000', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif');
 
 -- Additional Super Admin Users (password: admin123)
 INSERT INTO users (nama, email, nim, password, role_id, status, jurusan, angkatan) VALUES
-('Admin Satu', 'admin1@eormawa.test', '1000000001', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Teknik Informatika', '2020'),
-('Admin Dua', 'admin2@eormawa.test', '1000000002', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Sistem Informasi', '2021'),
-('Admin Tiga', 'admin3@eormawa.test', '1000000003', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Manajemen', '2020'),
-('Admin Empat', 'admin4@eormawa.test', '1000000004', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Teknik Elektro', '2021');
+('Admin Satu', 'admin1@orbita.test', '1000000001', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Teknik Informatika', '2020'),
+('Admin Dua', 'admin2@orbita.test', '1000000002', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Sistem Informasi', '2021'),
+('Admin Tiga', 'admin3@orbita.test', '1000000003', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Manajemen', '2020'),
+('Admin Empat', 'admin4@orbita.test', '1000000004', '$2y$10$XRAkND7otu5Rr3NweygK9OBRXUXWzdn/p0UO7gCy3Cvkhc7KtaElS', 1, 'aktif', 'Teknik Elektro', '2021');
 
 -- Mahasiswa Users (password: mahasiswa123)
 INSERT INTO users (nama, email, nim, password, role_id, status, jurusan, angkatan, no_hp) VALUES
-('Ahmad Rizky', 'ahmad@eormawa.test', '2021001001', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567890'),
-('Budi Santoso', 'budi@eormawa.test', '2021001002', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567891'),
-('Citra Dewi', 'citra@eormawa.test', '2021001003', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567892'),
-('Dian Pratama', 'dian@eormawa.test', '2021001004', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567893'),
-('Eka Wijaya', 'eka@eormawa.test', '2021001005', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567894'),
-('Fajar Nugraha', 'fajar@eormawa.test', '2021001006', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567895'),
-('Gita Permata', 'gita@eormawa.test', '2021001007', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567896'),
-('Hendra Saputra', 'hendra@eormawa.test', '2021001008', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567897'),
-('Indah Sari', 'indah@eormawa.test', '2021001009', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567898'),
-('Joko Widodo', 'joko@eormawa.test', '2021001010', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567899'),
-('Kartika Putri', 'kartika@eormawa.test', '2021001011', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567900'),
-('Lukman Hakim', 'lukman@eormawa.test', '2021001012', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567901'),
-('Maya Sari', 'maya@eormawa.test', '2021001013', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567902'),
-('Nurul Hidayah', 'nurul@eormawa.test', '2021001014', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567903'),
-('Oscar Pratama', 'oscar@eormawa.test', '2021001015', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567904'),
-('Putri Ayu', 'putri@eormawa.test', '2021001016', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567905'),
-('Qori Aulia', 'qori@eormawa.test', '2021001017', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567906'),
-('Rian Hidayat', 'rian@eormawa.test', '2021001018', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567907'),
-('Siti Aminah', 'siti@eormawa.test', '2021001019', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567908'),
-('Taufik Hidayat', 'taufik@eormawa.test', '2021001020', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567909');
+('Ahmad Rizky', 'ahmad@orbita.test', '2021001001', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567890'),
+('Budi Santoso', 'budi@orbita.test', '2021001002', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567891'),
+('Citra Dewi', 'citra@orbita.test', '2021001003', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567892'),
+('Dian Pratama', 'dian@orbita.test', '2021001004', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567893'),
+('Eka Wijaya', 'eka@orbita.test', '2021001005', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567894'),
+('Fajar Nugraha', 'fajar@orbita.test', '2021001006', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567895'),
+('Gita Permata', 'gita@orbita.test', '2021001007', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567896'),
+('Hendra Saputra', 'hendra@orbita.test', '2021001008', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567897'),
+('Indah Sari', 'indah@orbita.test', '2021001009', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567898'),
+('Joko Widodo', 'joko@orbita.test', '2021001010', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567899'),
+('Kartika Putri', 'kartika@orbita.test', '2021001011', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567900'),
+('Lukman Hakim', 'lukman@orbita.test', '2021001012', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567901'),
+('Maya Sari', 'maya@orbita.test', '2021001013', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567902'),
+('Nurul Hidayah', 'nurul@orbita.test', '2021001014', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567903'),
+('Oscar Pratama', 'oscar@orbita.test', '2021001015', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567904'),
+('Putri Ayu', 'putri@orbita.test', '2021001016', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567905'),
+('Qori Aulia', 'qori@orbita.test', '2021001017', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Manajemen', '2021', '081234567906'),
+('Rian Hidayat', 'rian@orbita.test', '2021001018', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Informatika', '2021', '081234567907'),
+('Siti Aminah', 'siti@orbita.test', '2021001019', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Sistem Informasi', '2021', '081234567908'),
+('Taufik Hidayat', 'taufik@orbita.test', '2021001020', '$2y$10$XRcUIw535eLt4XMDlQ/7weM/1HzITjJ6aQg6.enl6DdbVJFUBoqY.', 3, 'aktif', 'Teknik Elektro', '2021', '081234567909');
 
 -- =====================================================
 -- 3. organisasi
@@ -337,7 +337,7 @@ CREATE TABLE pengumuman (
 
 -- Dummy Pengumuman (10 announcements)
 INSERT INTO pengumuman (judul, isi, tipe, organisasi_id, created_by) VALUES
-('Selamat Datang di E-ORMAWA', 'Selamat datang di sistem manajemen organisasi mahasiswa. Silakan jelajahi fitur-fitur yang tersedia.', 'global', NULL, 1),
+('Selamat Datang di ORBITA', 'Selamat datang di sistem manajemen organisasi mahasiswa. Silakan jelajahi fitur-fitur yang tersedia.', 'global', NULL, 1),
 ('Pengumuman Libur Nasional', 'Diberitahukan bahwa kampus akan libur pada tanggal 17 Agustus dalam rangka Hari Kemerdekaan.', 'global', NULL, 1),
 ('Workshop HIMTI: Web Development', 'HIMTI mengadakan workshop web development pada tanggal 20 Februari 2024. Silakan daftar segera.', 'organisasi', 1, 6),
 ('Audisi PSM Anggota Baru', 'UKM Paduan Suara Mahasiswa membuka pendaftaran anggota baru. Audisi akan dilaksanakan pada 1-2 Februari 2024.', 'organisasi', 2, 10),
@@ -365,13 +365,13 @@ CREATE TABLE notifikasi (
 
 -- Dummy Notifikasi (20 notifications)
 INSERT INTO notifikasi (user_id, judul, pesan, tipe, is_read) VALUES
-(6, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Leader HIMTI', 'info', 1),
-(7, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Staff HIMTI', 'info', 1),
-(8, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Member HIMTI', 'info', 1),
-(10, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Leader PSM', 'info', 1),
-(14, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Leader BEM FT', 'info', 1),
-(18, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Leader ROBOTIKA', 'info', 1),
-(22, 'Selamat Datang', 'Selamat datang di E-ORMAWA sebagai Leader HIMMA', 'info', 1),
+(6, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Leader HIMTI', 'info', 1),
+(7, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Staff HIMTI', 'info', 1),
+(8, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Member HIMTI', 'info', 1),
+(10, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Leader PSM', 'info', 1),
+(14, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Leader BEM FT', 'info', 1),
+(18, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Leader ROBOTIKA', 'info', 1),
+(22, 'Selamat Datang', 'Selamat datang di ORBITA sebagai Leader HIMMA', 'info', 1),
 (8, 'Pendaftaran Diterima', 'Selamat! Anda telah diterima sebagai anggota PSM', 'success', 1),
 (9, 'Pendaftaran Diterima', 'Selamat! Anda telah diterima sebagai anggota PSM', 'success', 1),
 (10, 'Pendaftaran Diterima', 'Selamat! Anda telah diterima sebagai anggota BEM FT', 'success', 1),
@@ -429,7 +429,7 @@ INSERT INTO activity_log (user_id, aksi, detail, ip_address) VALUES
 (21, 'Join Organisasi', 'Bergabung dengan ROBOTIKA', '127.0.0.1'),
 (24, 'Join Organisasi', 'Bergabung dengan HIMMA', '127.0.0.1'),
 (25, 'Join Organisasi', 'Bergabung dengan HIMMA', '127.0.0.1'),
-(1, 'Create Pengumuman', 'Membuat pengumuman Selamat Datang di E-ORMAWA', '127.0.0.1'),
+(1, 'Create Pengumuman', 'Membuat pengumuman Selamat Datang di ORBITA', '127.0.0.1'),
 (1, 'Create Pengumuman', 'Membuat pengumuman Pengumuman Libur Nasional', '127.0.0.1'),
 (6, 'Update Kegiatan', 'Update kegiatan Hackathon 2024', '127.0.0.1'),
 (10, 'Update Kegiatan', 'Update kegiatan Konser Tahunan', '127.0.0.1');

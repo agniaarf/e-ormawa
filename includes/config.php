@@ -24,7 +24,7 @@ define('BASE_PATH', dirname(__DIR__));
 
 // Database credentials
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'e_ormawa');
+define('DB_NAME', 'orbita');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');

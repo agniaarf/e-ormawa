@@ -1,10 +1,10 @@
-# E-ORMAWA
+# ORBITA
 
 Sistem manajemen organisasi mahasiswa berbasis web yang memfasilitasi pengelolaan organisasi, kegiatan, dan keanggotaan mahasiswa di lingkungan kampus.
 
 ## 📋 Project Overview
 
-E-ORMAWA (Electronic Organisasi Mahasiswa) adalah aplikasi web yang dirancang untuk mempermudah pengelolaan organisasi mahasiswa, termasuk himpunan mahasiswa, UKM, dan BEM. Sistem ini menyediakan fitur lengkap untuk manajemen anggota, kegiatan, pendaftaran, dan notifikasi.
+ORBITA (Organisasi Berbasis Integrasi Teknologi Aplikasi) adalah aplikasi web yang dirancang untuk mempermudah pengelolaan organisasi mahasiswa, termasuk himpunan mahasiswa, UKM, dan BEM. Sistem ini menyediakan fitur lengkap untuk manajemen anggota, kegiatan, pendaftaran, dan notifikasi.
 
 ### Fitur Utama
 
@@ -42,27 +42,27 @@ E-ORMAWA (Electronic Organisasi Mahasiswa) adalah aplikasi web yang dirancang un
 1. **Clone atau download repository**
    ```bash
    cd htdocs
-   # Copy folder e-ormawa ke htdocs XAMPP
+   # Copy folder orbita ke htdocs XAMPP
    ```
 
 2. **Konfigurasi Database**
    - Buka phpMyAdmin di `http://localhost/phpmyadmin`
-   - Buat database baru bernama `e_ormawa`
-   - Import file `database/e_ormawa.sql` ke database tersebut
+   - Buat database baru bernama `orbita`
+   - Import file `database/orbita.sql` ke database tersebut
 
 3. **Konfigurasi Aplikasi**
    - Pastikan file `includes/config.php` sudah terkonfigurasi dengan benar
    - Sesuaikan konfigurasi database jika diperlukan:
    ```php
    define('DB_HOST', 'localhost');
-   define('DB_NAME', 'e_ormawa');
+   define('DB_NAME', 'orbita');
    define('DB_USER', 'root');
    define('DB_PASS', '');
    ```
 
 4. **Jalankan Aplikasi**
    - Start Apache dan MySQL di XAMPP
-   - Buka browser dan akses `http://localhost/e-ormawa`
+   - Buka browser dan akses `http://localhost/orbita`
 
 ## 👥 User Guide
 
@@ -116,11 +116,11 @@ Password untuk semua Super Admin: `admin123`
 
 | Email | NIM | Nama |
 |-------|-----|------|
-| admin@eormawa.test | 0000000000 | Super Admin |
-| admin1@eormawa.test | 1000000001 | Admin Satu |
-| admin2@eormawa.test | 1000000002 | Admin Dua |
-| admin3@eormawa.test | 1000000003 | Admin Tiga |
-| admin4@eormawa.test | 1000000004 | Admin Empat |
+| admin@orbita.test | 0000000000 | Super Admin |
+| admin1@orbita.test | 1000000001 | Admin Satu |
+| admin2@orbita.test | 1000000002 | Admin Dua |
+| admin3@orbita.test | 1000000003 | Admin Tiga |
+| admin4@orbita.test | 1000000004 | Admin Empat |
 
 ### Mahasiswa Accounts
 Password untuk semua Mahasiswa: `mahasiswa123`
@@ -153,7 +153,7 @@ Password untuk semua Mahasiswa: `mahasiswa123`
 ## 📁 Project Structure
 
 ```
-e-ormawa/
+orbita/
 ├── api/                          # API endpoints (jika ada)
 ├── assets/
 │   ├── css/
@@ -173,7 +173,7 @@ e-ormawa/
 │       ├── organisasi.php      # Organisasi table rows
 │       └── pengguna.php         # Users table rows
 ├── database/
-│   └── e_ormawa.sql           # Database schema & dummy data
+│   └── orbita.sql           # Database schema & dummy data
 ├── includes/
 │   ├── auth.php                # Authentication functions
 │   ├── config.php              # Configuration
